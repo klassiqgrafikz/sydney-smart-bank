@@ -14,16 +14,205 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          account_number: string
+          account_status: string
+          avatar_url: string | null
+          balance: number
+          country: string | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_number: string
+          account_status?: string
+          avatar_url?: string | null
+          balance?: number
+          country?: string | null
+          created_at?: string
+          email: string
+          first_name?: string
+          id: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_number?: string
+          account_status?: string
+          avatar_url?: string | null
+          balance?: number
+          country?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          receiver_name: string | null
+          sender_name: string | null
+          status: string
+          transaction_id: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          receiver_name?: string | null
+          sender_name?: string | null
+          status?: string
+          transaction_id?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          receiver_name?: string | null
+          sender_name?: string | null
+          status?: string
+          transaction_id?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transfers: {
+        Row: {
+          account_number: string | null
+          amount: number
+          country: string | null
+          created_at: string
+          iban: string | null
+          id: string
+          recipient_bank: string | null
+          recipient_name: string
+          reference: string | null
+          routing_number: string | null
+          status: string
+          swift_code: string | null
+          transfer_type: string
+          user_id: string
+        }
+        Insert: {
+          account_number?: string | null
+          amount: number
+          country?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          recipient_bank?: string | null
+          recipient_name: string
+          reference?: string | null
+          routing_number?: string | null
+          status?: string
+          swift_code?: string | null
+          transfer_type: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string | null
+          amount?: number
+          country?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          recipient_bank?: string | null
+          recipient_name?: string
+          reference?: string | null
+          routing_number?: string | null
+          status?: string
+          swift_code?: string | null
+          transfer_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_account_number: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +339,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
