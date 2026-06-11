@@ -8,12 +8,49 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Shield, Loader2 } from "lucide-react";
+import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Sydney Trust Bank" }] }),
   component: AuthPage,
 });
+
+function PasswordInput({
+  id,
+  value,
+  onChange,
+  autoComplete,
+  required,
+}: {
+  id?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  autoComplete?: string;
+  required?: boolean;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type={show ? "text" : "password"}
+        autoComplete={autoComplete}
+        required={required}
+        value={value}
+        onChange={onChange}
+        className="pr-10"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? "Hide password" : "Show password"}
+        className="absolute inset-y-0 right-0 grid w-10 place-items-center text-muted-foreground hover:text-foreground"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -176,7 +213,7 @@ function SignInForm() {
               <Label htmlFor="password">Password</Label>
               <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot?</Link>
             </div>
-            <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <PasswordInput id="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -243,8 +280,8 @@ function SignUpForm() {
             <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone} onChange={update("phone")} /></div>
             <div className="space-y-1.5"><Label>Country</Label><Input value={form.country} onChange={update("country")} placeholder="Australia" /></div>
           </div>
-          <div className="space-y-1.5"><Label>Password</Label><Input required type="password" value={form.password} onChange={update("password")} /></div>
-          <div className="space-y-1.5"><Label>Confirm password</Label><Input required type="password" value={form.confirm} onChange={update("confirm")} /></div>
+          <div className="space-y-1.5"><Label>Password</Label><PasswordInput required value={form.password} onChange={update("password")} /></div>
+          <div className="space-y-1.5"><Label>Confirm password</Label><PasswordInput required value={form.confirm} onChange={update("confirm")} /></div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Create account
