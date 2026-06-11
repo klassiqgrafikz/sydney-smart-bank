@@ -5,9 +5,9 @@ import { Shield, Globe, Zap, Lock, ArrowRight, CheckCircle2 } from "lucide-react
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sydney Trust Bank — Banking, reimagined" },
-      { name: "description", content: "Premium global banking. Open an account in minutes and send money worldwide with Sydney Trust Bank." },
-      { property: "og:title", content: "Sydney Trust Bank" },
+      { title: "Bank of Sydney — Banking, reimagined" },
+      { name: "description", content: "Premium global banking. Open an account in minutes and send money worldwide with Bank of Sydney." },
+      { property: "og:title", content: "Bank of Sydney" },
       { property: "og:description", content: "Premium global banking. Open an account in minutes." },
     ],
   }),
@@ -23,7 +23,7 @@ function Landing() {
             <div className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span>Sydney Trust</span>
+            <span>Bank of Sydney</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
@@ -97,7 +97,7 @@ function Landing() {
 
       <footer className="border-t bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Sydney Trust Bank. All rights reserved.
+          © {new Date().getFullYear()} Bank of Sydney. All rights reserved.
         </div>
       </footer>
     </div>

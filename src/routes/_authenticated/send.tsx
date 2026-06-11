@@ -14,7 +14,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/send")({
-  head: () => ({ meta: [{ title: "Send Money — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Send Money — Bank of Sydney" }] }),
   component: SendMoney,
 });
 

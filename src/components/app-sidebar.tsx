@@ -43,7 +43,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-sidebar-foreground">Sydney Trust</p>
+              <p className="text-sm font-semibold text-sidebar-foreground">Bank of Sydney</p>
               <p className="text-[10px] text-sidebar-foreground/60">Premium Banking</p>
             </div>
           )}

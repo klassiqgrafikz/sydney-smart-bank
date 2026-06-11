@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Reset password — Bank of Sydney" }] }),
   ssr: false,
   component: ResetPassword,
 });

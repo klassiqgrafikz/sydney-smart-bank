@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react";
 import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
 
 export const Route = createFileRoute("/_authenticated/receive")({
-  head: () => ({ meta: [{ title: "Receive Money — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Receive Money — Bank of Sydney" }] }),
   component: Receive,
 });
 
@@ -55,7 +55,7 @@ function Receive() {
         <CardContent className="grid gap-3 text-sm md:grid-cols-2">
           <Detail k="Account holder" v={getAccountHolderName(profile)} />
           <Detail k="Account number" v={<CopyAccountNumber value={profile?.account_number} />} />
-          <Detail k="Bank" v="Sydney Trust Bank" />
+          <Detail k="Bank" v="Bank of Sydney" />
         </CardContent>
       </Card>
 

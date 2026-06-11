@@ -15,7 +15,7 @@ import { Search, ShieldCheck, Snowflake, Sun, Loader2 } from "lucide-react";
 import { formatCurrency, formatDate, formatAccountNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin Portal — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Admin Portal — Bank of Sydney" }] }),
   beforeLoad: async () => {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw redirect({ to: "/auth" });
@@ -82,8 +82,8 @@ function AdminPortal() {
     await supabase.from("transactions").insert({
       user_id: selected.id, amount: amt, transaction_type: adjust.kind,
       description: adjust.note || `Admin ${adjust.kind}`,
-      sender_name: adjust.kind === "credit" ? "Sydney Trust Admin" : `${selected.first_name} ${selected.last_name}`,
-      receiver_name: adjust.kind === "credit" ? `${selected.first_name} ${selected.last_name}` : "Sydney Trust Admin",
+      sender_name: adjust.kind === "credit" ? "Bank of Sydney Admin" : `${selected.first_name} ${selected.last_name}`,
+      receiver_name: adjust.kind === "credit" ? `${selected.first_name} ${selected.last_name}` : "Bank of Sydney Admin",
     });
     const { data: me } = await supabase.auth.getUser();
     await supabase.from("audit_logs").insert({

@@ -13,7 +13,7 @@ import { Camera, Loader2 } from "lucide-react";
 import { CopyAccountNumber } from "@/components/copy-account-number";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Profile — Bank of Sydney" }] }),
   component: ProfilePage,
 });
 

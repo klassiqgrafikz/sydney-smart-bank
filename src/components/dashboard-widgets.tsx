@@ -37,7 +37,7 @@ function useAllTransactions() {
 
 export function VirtualCardWidget({ profile }: { profile?: Profile | null }) {
   const last4 = profile?.account_number?.slice(-4) ?? "0000";
-  const name = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim().toUpperCase() || "SYDNEY TRUST";
+  const name = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim().toUpperCase() || "BANK OF SYDNEY";
   return (
     <Card className="overflow-hidden border-0 text-white shadow-xl">
       <div
@@ -49,7 +49,7 @@ export function VirtualCardWidget({ profile }: { profile?: Profile | null }) {
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">Sydney Trust</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">Bank of Sydney</p>
             <p className="text-sm font-semibold">Platinum Debit</p>
           </div>
           <Wifi className="h-5 w-5 rotate-90 text-white/80" />

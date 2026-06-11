@@ -19,7 +19,7 @@ import {
 } from "@/components/dashboard-widgets";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Bank of Sydney" }] }),
   component: Dashboard,
 });
 

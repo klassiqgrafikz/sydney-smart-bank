@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Sydney Trust Bank" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Bank of Sydney" }] }),
   component: AuthPage,
 });
 
@@ -68,13 +68,13 @@ function AuthPage() {
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15">
             <Shield className="h-4 w-4" />
           </div>
-          Sydney Trust Bank
+          Bank of Sydney
         </Link>
         <div>
           <p className="text-3xl font-semibold leading-tight">Premium global banking, designed for how you actually live.</p>
           <p className="mt-4 text-white/70">Send money across 150+ countries with rates you'll love and security you can trust.</p>
         </div>
-        <p className="text-xs text-white/50">© {new Date().getFullYear()} Sydney Trust Bank</p>
+        <p className="text-xs text-white/50">© {new Date().getFullYear()} Bank of Sydney</p>
       </div>
       <div className="flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
@@ -200,7 +200,7 @@ function SignInForm() {
     <Card className="border-0 shadow-none md:border md:shadow-sm">
       <CardHeader>
         <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Sign in to your Sydney Trust account.</CardDescription>
+        <CardDescription>Sign in to your Bank of Sydney account.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
@@ -259,7 +259,7 @@ function SignUpForm() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created — welcome to Sydney Trust!");
+    toast.success("Account created — welcome to Bank of Sydney!");
     navigate({ to: "/dashboard" });
   };
 

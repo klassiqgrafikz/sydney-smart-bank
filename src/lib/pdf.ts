@@ -29,7 +29,7 @@ export function generateStatementPDF(opts: {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("Sydney Trust Bank", 14, 12);
+  doc.text("Bank of Sydney", 14, 12);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("Official Account Statement", 14, 20);
@@ -86,7 +86,7 @@ export function generateStatementPDF(opts: {
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
   doc.text(
-    "This statement is generated electronically by Sydney Trust Bank. For inquiries, contact support@sydneytrust.bank",
+    "This statement is generated electronically by Bank of Sydney. For inquiries, contact support@bankofsydney.com",
     14,
     finalY + 12,
   );
