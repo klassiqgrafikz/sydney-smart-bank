@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Search, ShieldCheck, Snowflake, Sun, Loader2 } from "lucide-react";
+import { Search, ShieldCheck, Snowflake, Sun, Loader2, Eraser } from "lucide-react";
 import { formatCurrency, formatDate, formatAccountNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -66,6 +67,13 @@ function AdminPortal() {
     toast.success(`Account ${next}`);
     qc.invalidateQueries({ queryKey: ["admin-users"] });
     qc.invalidateQueries({ queryKey: ["admin-logs"] });
+  };
+
+  const resetUser = async (u: typeof filtered[number]) => {
+    const { error } = await supabase.rpc("admin_reset_user", { _target_user_id: u.id });
+    if (error) return toast.error(error.message);
+    toast.success(`Wiped balance and transaction history for ${u.first_name} ${u.last_name}`);
+    qc.invalidateQueries();
   };
 
   const submitAdjust = async (e: React.FormEvent) => {
@@ -140,10 +148,31 @@ function AdminPortal() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button size="sm" variant="outline" className="mr-2" onClick={() => setSelectedId(u.id)}>Adjust</Button>
-                      <Button size="sm" variant="ghost" onClick={() => toggleFreeze(u)}>
+                      <Button size="sm" variant="ghost" className="mr-2" onClick={() => toggleFreeze(u)}>
                         {u.account_status === "frozen" ? <Sun className="mr-1 h-3 w-3" /> : <Snowflake className="mr-1 h-3 w-3" />}
                         {u.account_status === "frozen" ? "Unfreeze" : "Freeze"}
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            <Eraser className="mr-1 h-3 w-3" /> Reset
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Reset {u.first_name} {u.last_name}?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will set their balance to {formatCurrency(0)} and permanently delete all of their transaction history. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => resetUser(u)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Erase balance & history
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
