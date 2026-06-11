@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { formatAccountNumber } from "@/lib/format";
+import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
 
 export const Route = createFileRoute("/_authenticated/receive")({
   head: () => ({ meta: [{ title: "Receive Money — Sydney Trust" }] }),
@@ -53,10 +53,9 @@ function Receive() {
           <CardDescription>Share these with the sender.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 text-sm md:grid-cols-2">
-          <Detail k="Account holder" v={`${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "—"} />
-          <Detail k="Account number" v={<span className="font-mono">{formatAccountNumber(profile?.account_number)}</span>} />
+          <Detail k="Account holder" v={getAccountHolderName(profile)} />
+          <Detail k="Account number" v={<CopyAccountNumber value={profile?.account_number} />} />
           <Detail k="Bank" v="Sydney Trust Bank" />
-          <Detail k="SWIFT" v="SYDTAU2S" />
         </CardContent>
       </Card>
 
