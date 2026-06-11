@@ -1,21 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const ADMIN_CODE = "1975";
-
 /**
  * Bootstrap admin: if no admin exists in user_roles, the first authenticated
- * caller who provides the correct code becomes admin. Safe to call repeatedly;
- * once an admin exists, further calls are rejected.
+ * caller becomes admin. Safe to call repeatedly; once an admin exists,
+ * further calls are rejected.
  */
 export const bootstrapAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { code: string }) => {
-    if (!input || typeof input.code !== "string") throw new Error("Invalid request");
-    return { code: input.code };
-  })
-  .handler(async ({ data, context }) => {
-    if (data.code !== ADMIN_CODE) throw new Error("Invalid access code");
+  .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { count, error: cErr } = await supabaseAdmin
