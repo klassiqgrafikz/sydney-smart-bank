@@ -79,13 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Bank of Sydney — Secure Online Banking" },
-      { name: "description", content: "Premium online banking with Bank of Sydney. Send, receive, and manage money worldwide." },
-      { name: "author", content: "Bank of Sydney" },
-      { property: "og:title", content: "Bank of Sydney" },
-      { property: "og:description", content: "Premium online banking with Bank of Sydney." },
+      { title: "Sydney Trust Bank — Secure Online Banking" },
+      { name: "description", content: "Premium online banking with Sydney Trust Bank. Send, receive, and manage money worldwide." },
+      { name: "author", content: "Sydney Trust Bank" },
+      { property: "og:title", content: "Sydney Trust Bank — Secure Online Banking" },
+      { property: "og:description", content: "Premium online banking with Sydney Trust Bank. Send, receive, and manage money worldwide." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Sydney Trust Bank — Secure Online Banking" },
+      { name: "twitter:description", content: "Premium online banking with Sydney Trust Bank. Send, receive, and manage money worldwide." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e317ef4e-356a-4902-9b83-0813acc2d963/id-preview-5043a327--8fc5ac28-e182-451c-9060-a4f928402792.lovable.app-1781140134861.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e317ef4e-356a-4902-9b83-0813acc2d963/id-preview-5043a327--8fc5ac28-e182-451c-9060-a4f928402792.lovable.app-1781140134861.png" },
     ],
     links: [
       {
