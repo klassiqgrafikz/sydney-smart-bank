@@ -191,6 +191,44 @@ async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+function BootstrapAdminPanel({ code }: { code: string }) {
+  const claim = useServerFn(bootstrapAdmin);
+  const [busy, setBusy] = useState(false);
+
+  const onClaim = async () => {
+    setBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Sign in first, then return here to claim admin.");
+        return;
+      }
+      const res = await claim({ data: { code: code.trim() } });
+      if (res.ok) toast.success("You are now an admin on this project.");
+      else toast.message(res.reason ?? "Admin already exists");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-dashed p-3 text-sm">
+      <div className="font-medium mb-1 flex items-center gap-2">
+        <KeyRound className="h-4 w-4" /> First-time setup
+      </div>
+      <p className="text-muted-foreground mb-2">
+        On a fresh remix or new backend, click below to make your signed-in account
+        the admin. Only works if no admin exists yet.
+      </p>
+      <Button type="button" size="sm" variant="outline" onClick={onClaim} disabled={busy}>
+        {busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Claiming…</> : "Claim admin role"}
+      </Button>
+    </div>
+  );
+}
+
 function BrandTab({ code }: { code: string }) {
   const brand = useBrand();
   const qc = useQueryClient();
