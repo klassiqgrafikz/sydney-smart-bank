@@ -36,7 +36,7 @@ export async function ensureProfile(user: User): Promise<void> {
     return;
   }
 
-  const patch: Record<string, unknown> = {};
+  const patch: Record<string, string> = {};
   if (!existing.email && user.email) patch.email = user.email;
   if (!existing.first_name && metaFirst) patch.first_name = metaFirst;
   if (!existing.last_name && metaLast) patch.last_name = metaLast;
@@ -47,6 +47,6 @@ export async function ensureProfile(user: User): Promise<void> {
     if (acct) patch.account_number = acct as string;
   }
   if (Object.keys(patch).length > 0) {
-    await supabase.from("profiles").update(patch).eq("id", user.id);
+    await supabase.from("profiles").update(patch as never).eq("id", user.id);
   }
 }
