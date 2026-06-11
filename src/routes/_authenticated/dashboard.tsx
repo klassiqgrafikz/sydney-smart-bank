@@ -167,7 +167,7 @@ function Dashboard() {
         </Card>
       </div>
       <TransactionDetailsDialog tx={selectedTx} open={!!selectedTx} onOpenChange={(v) => !v && setSelectedTx(null)} />
-      <LiveSupport />
+      <LiveSupport hideEmail />
     </div>
   );
 }
