@@ -129,6 +129,15 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     const { error: bErr } = await supabase.rpc("adjust_own_balance", { delta: -amt });
     if (bErr) { setLoading(false); return toast.error(bErr.message); }
 
+    if (type === "domestic") {
+      await supabase.rpc("credit_account_by_number", {
+        _account_number: f.account_number,
+        _amount: amt,
+        _sender_name: `${profile.first_name} ${profile.last_name}`,
+        _description: `Transfer received — ${f.reference || "no reference"}`,
+      });
+    }
+
     qc.invalidateQueries({ queryKey: ["profile"] });
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
     qc.invalidateQueries({ queryKey: ["transactions"] });
