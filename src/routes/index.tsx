@@ -19,11 +19,8 @@ function Landing() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-primary">
-            <div className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
-              <Shield className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span>Bank of Sydney</span>
+          <Link to="/" aria-label="Bank of Sydney" className="flex items-center">
+            <img src={bankWordmark.url} alt="Bank of Sydney" className="h-9 w-auto md:h-10" />
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
