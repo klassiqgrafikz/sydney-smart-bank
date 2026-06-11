@@ -83,16 +83,81 @@ function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mfa, setMfa] = useState<{ factorId: string } | null>(null);
+  const [code, setCode] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    const { data: aal, error: aalErr } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalErr) {
+      setLoading(false);
+      return toast.error(aalErr.message);
+    }
+    if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totp = factors?.totp?.find((f) => f.status === "verified");
+      if (totp) {
+        setMfa({ factorId: totp.id });
+        setLoading(false);
+        return;
+      }
+    }
     setLoading(false);
-    if (error) return toast.error(error.message);
     toast.success("Login successful");
     navigate({ to: "/dashboard" });
   };
+
+  const verifyMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfa) return;
+    setLoading(true);
+    const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: mfa.factorId });
+    if (cErr || !challenge) {
+      setLoading(false);
+      return toast.error(cErr?.message ?? "Could not start verification");
+    }
+    const { error } = await supabase.auth.mfa.verify({
+      factorId: mfa.factorId,
+      challengeId: challenge.id,
+      code: code.trim(),
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Verified");
+    navigate({ to: "/dashboard" });
+  };
+
+  if (mfa) {
+    return (
+      <Card className="border-0 shadow-none md:border md:shadow-sm">
+        <CardHeader>
+          <CardTitle>Two-factor verification</CardTitle>
+          <CardDescription>Enter the 6-digit code from your authenticator app.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={verifyMfa} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="otp">Authentication code</Label>
+              <Input id="otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={code} onChange={(e) => setCode(e.target.value)} />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || code.length < 6}>
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Verify
+            </Button>
+            <Button type="button" variant="ghost" className="w-full" onClick={async () => { await supabase.auth.signOut(); setMfa(null); setCode(""); }}>
+              Cancel
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-0 shadow-none md:border md:shadow-sm">
