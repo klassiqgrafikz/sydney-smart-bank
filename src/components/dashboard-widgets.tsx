@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -259,9 +259,8 @@ export function ExchangeRatesWidget() {
     FX_PAIRS.map((p) => ({ pair: p.pair, rate: FALLBACK[p.pair], prev: FALLBACK[p.pair] })),
   );
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-  const baseRef = useRef<Record<string, number>>({ ...FALLBACK });
 
-  // Fetch live rates every 60s
+  // Fetch live rates every 5 seconds — no simulation between fetches
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -272,7 +271,6 @@ export function ExchangeRatesWidget() {
       setRows((curr) =>
         curr.map((r) => {
           const found = results.find((x) => x.pair === r.pair);
-          if (found?.rate) baseRef.current[r.pair] = found.rate;
           const newRate = found?.rate ?? r.rate;
           return { pair: r.pair, rate: newRate, prev: r.rate };
         }),
@@ -280,29 +278,11 @@ export function ExchangeRatesWidget() {
       setUpdatedAt(new Date());
     };
     load();
-    const id = setInterval(load, 60_000);
+    const id = setInterval(load, 5_000);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, []);
-
-  // Simulate intraday ticks every 2s for live feel
-  useEffect(() => {
-    const id = setInterval(() => {
-      setRows((curr) =>
-        curr.map((r) => {
-          const base = baseRef.current[r.pair] ?? r.rate;
-          // small random walk around the latest base rate (±0.15%)
-          const drift = (Math.random() - 0.5) * 0.003 * base;
-          const next = Math.max(0, r.rate + drift);
-          // pull gently toward base so it doesn't wander
-          const pulled = next * 0.9 + base * 0.1;
-          return { ...r, prev: r.rate, rate: pulled };
-        }),
-      );
-    }, 2000);
-    return () => clearInterval(id);
   }, []);
 
   return (
@@ -315,8 +295,7 @@ export function ExchangeRatesWidget() {
       </CardHeader>
       <CardContent className="divide-y">
         {rows.map((r) => {
-          const base = baseRef.current[r.pair] ?? r.rate;
-          const changePct = ((r.rate - base) / base) * 100;
+          const changePct = r.prev ? ((r.rate - r.prev) / r.prev) * 100 : 0;
           const tickUp = r.rate >= r.prev;
           return (
             <div key={r.pair} className="flex items-center justify-between py-2.5">
