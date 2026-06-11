@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -75,10 +75,11 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
                   <TabsTrigger value="support">Support</TabsTrigger>
+                  <TabsTrigger value="site">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fund" className="pt-4">
                   <FundTab />
@@ -88,6 +89,9 @@ function AdminPortalPage() {
                 </TabsContent>
                 <TabsContent value="support" className="pt-4">
                   <SupportTab />
+                </TabsContent>
+                <TabsContent value="site" className="pt-4">
+                  <MaintenanceTab />
                 </TabsContent>
               </Tabs>
             </div>
