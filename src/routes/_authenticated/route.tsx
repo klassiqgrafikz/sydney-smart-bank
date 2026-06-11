@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useAvatarUrl } from "@/hooks/use-avatar-url";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ensureProfile } from "@/lib/ensure-profile";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated")({
       await supabase.auth.signOut();
       throw redirect({ to: "/auth" });
     }
+    await ensureProfile(data.user);
     return { user: data.user };
   },
   component: AuthedLayout,
