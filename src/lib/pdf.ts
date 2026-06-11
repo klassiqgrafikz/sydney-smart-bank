@@ -1,7 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { formatCurrency, formatDateShort } from "./format";
-import { formatDate } from "./format";
+import { formatCurrency, formatDate, formatDateShort } from "./format";
 
 export interface StatementTx {
   created_at: string;
