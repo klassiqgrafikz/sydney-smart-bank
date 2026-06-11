@@ -1,4 +1,6 @@
-import { createFileRoute, Outlet, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -8,6 +10,11 @@ import { NotificationsBell } from "@/components/notifications-bell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ensureProfile } from "@/lib/ensure-profile";
 import { useBrand } from "@/hooks/use-brand";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { LogOut, User as UserIcon, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { deleteOwnAccount } from "@/lib/account.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -30,6 +37,29 @@ function AuthedLayout() {
   const avatarUrl = useAvatarUrl(profile?.avatar_url);
   const initials = `${profile?.first_name?.[0] ?? ""}${profile?.last_name?.[0] ?? ""}`.toUpperCase() || "ST";
   const brand = useBrand();
+  const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const deleteFn = useServerFn(deleteOwnAccount);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteFn({});
+      await supabase.auth.signOut();
+      toast.success("Your account has been deleted");
+      navigate({ to: "/auth" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete account");
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   return (
     <SidebarProvider>
@@ -43,12 +73,36 @@ function AuthedLayout() {
             </Link>
             <div className="ml-auto flex items-center gap-3">
               {profile?.id ? <NotificationsBell userId={profile.id} /> : null}
-              <Link to="/profile" aria-label="Profile" className="rounded-full ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                <Avatar className="h-8 w-8">
-                  {avatarUrl ? <AvatarImage src={avatarUrl} alt="Profile picture" /> : null}
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
-                </Avatar>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger aria-label="Account menu" className="rounded-full ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <Avatar className="h-8 w-8">
+                    {avatarUrl ? <AvatarImage src={avatarUrl} alt="Profile picture" /> : null}
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{profile?.first_name} {profile?.last_name}</span>
+                      <span className="truncate text-xs text-muted-foreground">{profile?.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile"><UserIcon className="mr-2 h-4 w-4" /> Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={(e) => { e.preventDefault(); setConfirmDelete(true); }}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete account
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
@@ -56,6 +110,27 @@ function AuthedLayout() {
           </main>
         </div>
       </div>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes your profile, balance, and all of your transactions and transfers. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Yes, delete my account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   );
 }
