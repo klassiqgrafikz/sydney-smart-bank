@@ -46,7 +46,7 @@ export function useBrand(): BrandSettings {
         .eq("id", "singleton")
         .maybeSingle();
       if (error || !data) return BRAND_DEFAULTS;
-      const row = data as Record<string, unknown>;
+      const row = data as unknown as Record<string, unknown>;
       const str = (k: string) => (typeof row[k] === "string" ? (row[k] as string) : "");
       return {
         bankName: str("bank_name") || BRAND_DEFAULTS.bankName,
