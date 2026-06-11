@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -71,15 +72,19 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
+                  <TabsTrigger value="support">Support</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fund" className="pt-4">
                   <FundTab code={code} />
                 </TabsContent>
                 <TabsContent value="brand" className="pt-4">
                   <BrandTab code={code} />
+                </TabsContent>
+                <TabsContent value="support" className="pt-4">
+                  <SupportTab code={code} />
                 </TabsContent>
               </Tabs>
               <BootstrapAdminPanel code={code} />
