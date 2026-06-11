@@ -102,10 +102,7 @@ function Dashboard() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <VirtualCardWidget profile={profile} />
-        <div className="lg:col-span-2"><CashFlowWidget /></div>
-      </div>
+      <CashFlowWidget />
 
       <div className="grid gap-4 md:grid-cols-3">
         <SavingsGoalWidget balance={Number(profile?.balance ?? 0)} />
