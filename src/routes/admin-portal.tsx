@@ -495,3 +495,64 @@ function SupportTab() {
     </form>
   );
 }
+function MaintenanceTab() {
+  const brand = useBrand();
+  const qc = useQueryClient();
+  const update = useServerFn(updateBrandSettings);
+  const [enabled, setEnabled] = useState(brand.maintenanceMode);
+  const [saving, setSaving] = useState(false);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    setEnabled(brand.maintenanceMode);
+    initialized.current = true;
+  }, [brand]);
+
+  const toggle = async (next: boolean) => {
+    setEnabled(next);
+    setSaving(true);
+    try {
+      await update({ data: { maintenanceMode: next } });
+      await qc.invalidateQueries({ queryKey: ["app-settings"] });
+      toast.success(next ? "Maintenance mode ON — users see the notice." : "Maintenance mode OFF.");
+    } catch (err) {
+      setEnabled(!next);
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="flex items-center gap-2">
+          <Wrench className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-sm font-medium">Site under development notice</div>
+            <p className="text-xs text-muted-foreground">
+              When ON, signed-in users see only an "under development" message on their dashboard. Admins are unaffected.
+            </p>
+          </div>
+        </div>
+        <Switch checked={enabled} onCheckedChange={toggle} disabled={saving} />
+      </div>
+      <Button
+        type="button"
+        variant={enabled ? "destructive" : "default"}
+        className="w-full"
+        disabled={saving}
+        onClick={() => toggle(!enabled)}
+      >
+        {saving ? (
+          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</>
+        ) : enabled ? (
+          "Turn OFF maintenance mode"
+        ) : (
+          "Turn ON maintenance mode"
+        )}
+      </Button>
+    </div>
+  );
+}
