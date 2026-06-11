@@ -16,6 +16,7 @@ export interface BrandSettings {
   supportTelegram: string;
   supportChatUrl: string;
   supportMessage: string;
+  maintenanceMode: boolean;
 }
 
 export const BRAND_DEFAULTS: BrandSettings = {
@@ -31,6 +32,7 @@ export const BRAND_DEFAULTS: BrandSettings = {
   supportTelegram: "",
   supportChatUrl: "",
   supportMessage: "Hi! I need help with my account.",
+  maintenanceMode: false,
 };
 
 export function useBrand(): BrandSettings {
@@ -38,7 +40,7 @@ export function useBrand(): BrandSettings {
     queryKey: ["app-settings"],
     queryFn: async (): Promise<BrandSettings> => {
       const { data: { session } } = await supabase.auth.getSession();
-      const publicCols = "bank_name, tagline, logo_data_url, mark_data_url, support_enabled";
+      const publicCols = "bank_name, tagline, logo_data_url, mark_data_url, support_enabled, maintenance_mode";
       const fullCols = `${publicCols}, support_email, support_phone, address, support_whatsapp, support_telegram, support_chat_url, support_message`;
       const { data, error } = await supabase
         .from("app_settings")
@@ -61,6 +63,7 @@ export function useBrand(): BrandSettings {
         supportTelegram: str("support_telegram"),
         supportChatUrl: str("support_chat_url"),
         supportMessage: str("support_message") || BRAND_DEFAULTS.supportMessage,
+        maintenanceMode: !!row.maintenance_mode,
       };
     },
     staleTime: 60_000,

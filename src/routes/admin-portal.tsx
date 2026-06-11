@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -75,10 +75,11 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
                   <TabsTrigger value="support">Support</TabsTrigger>
+                  <TabsTrigger value="site">Site</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fund" className="pt-4">
                   <FundTab />
@@ -88,6 +89,9 @@ function AdminPortalPage() {
                 </TabsContent>
                 <TabsContent value="support" className="pt-4">
                   <SupportTab />
+                </TabsContent>
+                <TabsContent value="site" className="pt-4">
+                  <MaintenanceTab />
                 </TabsContent>
               </Tabs>
             </div>
@@ -489,5 +493,66 @@ function SupportTab() {
         {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : "Save support settings"}
       </Button>
     </form>
+  );
+}
+function MaintenanceTab() {
+  const brand = useBrand();
+  const qc = useQueryClient();
+  const update = useServerFn(updateBrandSettings);
+  const [enabled, setEnabled] = useState(brand.maintenanceMode);
+  const [saving, setSaving] = useState(false);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    setEnabled(brand.maintenanceMode);
+    initialized.current = true;
+  }, [brand]);
+
+  const toggle = async (next: boolean) => {
+    setEnabled(next);
+    setSaving(true);
+    try {
+      await update({ data: { maintenanceMode: next } });
+      await qc.invalidateQueries({ queryKey: ["app-settings"] });
+      toast.success(next ? "Maintenance mode ON — users see the notice." : "Maintenance mode OFF.");
+    } catch (err) {
+      setEnabled(!next);
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Update failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="flex items-center gap-2">
+          <Wrench className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-sm font-medium">Site under development notice</div>
+            <p className="text-xs text-muted-foreground">
+              When ON, signed-in users see only an "under development" message on their dashboard. Admins are unaffected.
+            </p>
+          </div>
+        </div>
+        <Switch checked={enabled} onCheckedChange={toggle} disabled={saving} />
+      </div>
+      <Button
+        type="button"
+        variant={enabled ? "destructive" : "default"}
+        className="w-full"
+        disabled={saving}
+        onClick={() => toggle(!enabled)}
+      >
+        {saving ? (
+          <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</>
+        ) : enabled ? (
+          "Turn OFF maintenance mode"
+        ) : (
+          "Turn ON maintenance mode"
+        )}
+      </Button>
+    </div>
   );
 }

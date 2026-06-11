@@ -17,6 +17,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       supportTelegram?: string;
       supportChatUrl?: string;
       supportMessage?: string;
+      maintenanceMode?: boolean;
     }) => {
       if (!input) throw new Error("Invalid request");
       const str = (v: unknown, max: number) => {
@@ -46,6 +47,8 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
         supportTelegram: str(input.supportTelegram, 100),
         supportChatUrl: str(input.supportChatUrl, 500),
         supportMessage: str(input.supportMessage, 300),
+        maintenanceMode:
+          typeof input.maintenanceMode === "boolean" ? input.maintenanceMode : undefined,
       };
     },
   )
@@ -70,6 +73,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       support_telegram?: string;
       support_chat_url?: string;
       support_message?: string;
+      maintenance_mode?: boolean;
     } = {};
     if (data.bankName !== undefined && data.bankName.length > 0) patch.bank_name = data.bankName;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
@@ -83,6 +87,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
     if (data.supportTelegram !== undefined) patch.support_telegram = data.supportTelegram;
     if (data.supportChatUrl !== undefined) patch.support_chat_url = data.supportChatUrl;
     if (data.supportMessage !== undefined) patch.support_message = data.supportMessage;
+    if (data.maintenanceMode !== undefined) patch.maintenance_mode = data.maintenanceMode;
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabaseAdmin
       .from("app_settings")
