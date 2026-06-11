@@ -257,6 +257,15 @@ export type Database = {
     }
     Functions: {
       adjust_own_balance: { Args: { delta: number }; Returns: number }
+      credit_account_by_number: {
+        Args: {
+          _account_number: string
+          _amount: number
+          _description: string
+          _sender_name: string
+        }
+        Returns: string
+      }
       generate_account_number: { Args: never; Returns: string }
       has_role: {
         Args: {
