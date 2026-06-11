@@ -19,6 +19,7 @@ function AdminPortalPage() {
   const [unlocked, setUnlocked] = useState(false);
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
+  const [senderName, setSenderName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const fund = useServerFn(adminFundAccount);
 
@@ -36,13 +37,19 @@ function AdminPortalPage() {
     setSubmitting(true);
     try {
       const res = await fund({
-        data: { code: code.trim(), accountNumber: accountNumber.trim(), amount: Number(amount) },
+        data: {
+          code: code.trim(),
+          accountNumber: accountNumber.trim(),
+          amount: Number(amount),
+          senderName: senderName.trim(),
+        },
       });
       toast.success(
         `Funded ${res.holder || "account"} (${res.accountNumber}). New balance: ${res.newBalance.toLocaleString()}`,
       );
       setAccountNumber("");
       setAmount("");
+      setSenderName("");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Funding failed";
       toast.error(msg.replace(/^Error:\s*/, ""));
@@ -87,6 +94,18 @@ function AdminPortalPage() {
             </form>
           ) : (
             <form onSubmit={submit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="sender">Name of sender</Label>
+                <Input
+                  id="sender"
+                  autoComplete="off"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                  placeholder="e.g. Bank of Sydney"
+                  maxLength={100}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="account">Targeted account number</Label>
                 <Input

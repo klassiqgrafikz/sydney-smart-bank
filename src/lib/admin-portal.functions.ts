@@ -3,15 +3,19 @@ import { createServerFn } from "@tanstack/react-start";
 const ADMIN_CODE = "1975";
 
 export const adminFundAccount = createServerFn({ method: "POST" })
-  .inputValidator((input: { code: string; accountNumber: string; amount: number }) => {
+  .inputValidator((input: { code: string; accountNumber: string; amount: number; senderName: string }) => {
     if (!input || typeof input.code !== "string") throw new Error("Invalid request");
     const accountNumber = String(input.accountNumber ?? "").trim();
     const amount = Number(input.amount);
+    const senderName = String(input.senderName ?? "").trim();
     if (!/^\d{6,20}$/.test(accountNumber)) throw new Error("Invalid account number");
     if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000_000) {
       throw new Error("Invalid amount");
     }
-    return { code: input.code, accountNumber, amount };
+    if (senderName.length < 1 || senderName.length > 100) {
+      throw new Error("Invalid sender name");
+    }
+    return { code: input.code, accountNumber, amount, senderName };
   })
   .handler(async ({ data }) => {
     if (data.code !== ADMIN_CODE) {
@@ -39,7 +43,7 @@ export const adminFundAccount = createServerFn({ method: "POST" })
     const { error: tErr } = await supabaseAdmin.from("transactions").insert({
       transaction_id: txId,
       user_id: profile.id,
-      sender_name: "Bank of Sydney",
+      sender_name: data.senderName,
       receiver_name: `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Account holder",
       amount: data.amount,
       transaction_type: "credit",
