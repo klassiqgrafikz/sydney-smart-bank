@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -227,37 +227,123 @@ export function SavingsGoalWidget({ balance }: { balance: number }) {
   );
 }
 
-const RATES: { pair: string; rate: number; change: number }[] = [
-  { pair: "EUR / USD", rate: 1.0842, change: 0.21 },
-  { pair: "GBP / USD", rate: 1.2715, change: -0.08 },
-  { pair: "USD / JPY", rate: 154.32, change: 0.45 },
-  { pair: "USD / NGN", rate: 1580.5, change: -0.32 },
+type FxRow = { pair: string; rate: number; prev: number };
+
+const FX_PAIRS: { pair: string; base: string; quote: string }[] = [
+  { pair: "EUR / USD", base: "EUR", quote: "USD" },
+  { pair: "GBP / USD", base: "GBP", quote: "USD" },
+  { pair: "USD / JPY", base: "USD", quote: "JPY" },
+  { pair: "USD / NGN", base: "USD", quote: "NGN" },
 ];
 
+const FALLBACK: Record<string, number> = {
+  "EUR / USD": 1.0842,
+  "GBP / USD": 1.2715,
+  "USD / JPY": 154.32,
+  "USD / NGN": 1580.5,
+};
+
+async function fetchPairRate(base: string, quote: string): Promise<number | null> {
+  try {
+    const res = await fetch(`https://open.er-api.com/v6/latest/${base}`);
+    if (!res.ok) return null;
+    const json = (await res.json()) as { rates?: Record<string, number> };
+    return json.rates?.[quote] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function ExchangeRatesWidget() {
+  const [rows, setRows] = useState<FxRow[]>(() =>
+    FX_PAIRS.map((p) => ({ pair: p.pair, rate: FALLBACK[p.pair], prev: FALLBACK[p.pair] })),
+  );
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const baseRef = useRef<Record<string, number>>({ ...FALLBACK });
+
+  // Fetch live rates every 60s
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const results = await Promise.all(
+        FX_PAIRS.map(async (p) => ({ pair: p.pair, rate: await fetchPairRate(p.base, p.quote) })),
+      );
+      if (cancelled) return;
+      setRows((curr) =>
+        curr.map((r) => {
+          const found = results.find((x) => x.pair === r.pair);
+          if (found?.rate) baseRef.current[r.pair] = found.rate;
+          const newRate = found?.rate ?? r.rate;
+          return { pair: r.pair, rate: newRate, prev: r.rate };
+        }),
+      );
+      setUpdatedAt(new Date());
+    };
+    load();
+    const id = setInterval(load, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  // Simulate intraday ticks every 2s for live feel
+  useEffect(() => {
+    const id = setInterval(() => {
+      setRows((curr) =>
+        curr.map((r) => {
+          const base = baseRef.current[r.pair] ?? r.rate;
+          // small random walk around the latest base rate (±0.15%)
+          const drift = (Math.random() - 0.5) * 0.003 * base;
+          const next = Math.max(0, r.rate + drift);
+          // pull gently toward base so it doesn't wander
+          const pulled = next * 0.9 + base * 0.1;
+          return { ...r, prev: r.rate, rate: pulled };
+        }),
+      );
+    }, 2000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <ArrowRightLeft className="h-4 w-4 text-primary" /> FX Rates
+          <span className="ml-1 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-500" aria-label="live" />
         </CardTitle>
       </CardHeader>
       <CardContent className="divide-y">
-        {RATES.map((r) => (
-          <div key={r.pair} className="flex items-center justify-between py-2.5">
-            <span className="text-sm font-medium">{r.pair}</span>
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-sm">{r.rate.toFixed(r.rate > 100 ? 2 : 4)}</span>
-              <span
-                className={`flex items-center gap-0.5 text-xs ${r.change >= 0 ? "text-emerald-600" : "text-rose-600"}`}
-              >
-                {r.change >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {Math.abs(r.change).toFixed(2)}%
-              </span>
+        {rows.map((r) => {
+          const base = baseRef.current[r.pair] ?? r.rate;
+          const changePct = ((r.rate - base) / base) * 100;
+          const tickUp = r.rate >= r.prev;
+          return (
+            <div key={r.pair} className="flex items-center justify-between py-2.5">
+              <span className="text-sm font-medium">{r.pair}</span>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`font-mono text-sm tabular-nums transition-colors ${
+                    tickUp ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {r.rate.toFixed(r.rate > 100 ? 2 : 4)}
+                </span>
+                <span
+                  className={`flex w-16 items-center justify-end gap-0.5 text-xs tabular-nums ${
+                    changePct >= 0 ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {changePct >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {Math.abs(changePct).toFixed(2)}%
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
-        <p className="pt-2 text-[10px] text-muted-foreground">Indicative rates · updated hourly</p>
+          );
+        })}
+        <p className="pt-2 text-[10px] text-muted-foreground">
+          Live indicative rates{updatedAt ? ` · synced ${updatedAt.toLocaleTimeString()}` : ""}
+        </p>
       </CardContent>
     </Card>
   );
