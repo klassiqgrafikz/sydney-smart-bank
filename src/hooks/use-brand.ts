@@ -37,25 +37,30 @@ export function useBrand(): BrandSettings {
   const { data } = useQuery({
     queryKey: ["app-settings"],
     queryFn: async (): Promise<BrandSettings> => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const publicCols = "bank_name, tagline, logo_data_url, mark_data_url, support_enabled";
+      const fullCols = `${publicCols}, support_email, support_phone, address, support_whatsapp, support_telegram, support_chat_url, support_message`;
       const { data, error } = await supabase
         .from("app_settings")
-        .select("bank_name, tagline, support_email, support_phone, address, logo_data_url, mark_data_url, support_enabled, support_whatsapp, support_telegram, support_chat_url, support_message")
+        .select(session ? fullCols : publicCols)
         .eq("id", "singleton")
         .maybeSingle();
       if (error || !data) return BRAND_DEFAULTS;
+      const row = data as unknown as Record<string, unknown>;
+      const str = (k: string) => (typeof row[k] === "string" ? (row[k] as string) : "");
       return {
-        bankName: data.bank_name || BRAND_DEFAULTS.bankName,
-        tagline: data.tagline || BRAND_DEFAULTS.tagline,
-        supportEmail: data.support_email || BRAND_DEFAULTS.supportEmail,
-        supportPhone: data.support_phone || "",
-        address: data.address || "",
-        logoUrl: data.logo_data_url || BRAND_DEFAULTS.logoUrl,
-        markUrl: data.mark_data_url || BRAND_DEFAULTS.markUrl,
-        supportEnabled: !!data.support_enabled,
-        supportWhatsapp: data.support_whatsapp || "",
-        supportTelegram: data.support_telegram || "",
-        supportChatUrl: data.support_chat_url || "",
-        supportMessage: data.support_message || BRAND_DEFAULTS.supportMessage,
+        bankName: str("bank_name") || BRAND_DEFAULTS.bankName,
+        tagline: str("tagline") || BRAND_DEFAULTS.tagline,
+        supportEmail: str("support_email") || (session ? BRAND_DEFAULTS.supportEmail : ""),
+        supportPhone: str("support_phone"),
+        address: str("address"),
+        logoUrl: str("logo_data_url") || BRAND_DEFAULTS.logoUrl,
+        markUrl: str("mark_data_url") || BRAND_DEFAULTS.markUrl,
+        supportEnabled: !!row.support_enabled,
+        supportWhatsapp: str("support_whatsapp"),
+        supportTelegram: str("support_telegram"),
+        supportChatUrl: str("support_chat_url"),
+        supportMessage: str("support_message") || BRAND_DEFAULTS.supportMessage,
       };
     },
     staleTime: 60_000,

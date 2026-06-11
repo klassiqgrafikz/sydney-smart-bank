@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminFundAccount } from "@/lib/admin-portal.functions";
 import { updateBrandSettings } from "@/lib/brand.functions";
 import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound, MessageCircle } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -23,17 +23,20 @@ export const Route = createFileRoute("/admin-portal")({
 });
 
 function AdminPortalPage() {
-  const [code, setCode] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
-
-  const unlock = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code.trim() === "1975") {
-      setUnlocked(true);
-    } else {
-      toast.error("Invalid access code");
-    }
-  };
+  const { data: gate, isLoading } = useQuery({
+    queryKey: ["admin-gate"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { signedIn: false, isAdmin: false } as const;
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+      return { signedIn: true, isAdmin: !!isAdmin } as const;
+    },
+    staleTime: 30_000,
+  });
+  const unlocked = !!gate?.isAdmin;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -48,27 +51,27 @@ function AdminPortalPage() {
             <CardTitle>Admin Portal</CardTitle>
           </div>
           <CardDescription>
-            {unlocked ? "Manage funding and branding." : "Enter access code to continue."}
+            {unlocked
+              ? "Manage funding and branding."
+              : gate?.signedIn
+                ? "Your account doesn't have admin access."
+                : "Sign in with an admin account to continue."}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!unlocked ? (
-            <form onSubmit={unlock} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">Access code</Label>
-                <Input
-                  id="code"
-                  type="password"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="••••"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">Unlock</Button>
-            </form>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Checking access…
+            </div>
+          ) : !unlocked ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                {gate?.signedIn
+                  ? "You're signed in, but your account is not an admin. If this is a fresh setup with no admin yet, use the bootstrap panel below."
+                  : "Sign in first, then return here. If this is a fresh setup, the first signed-in user can claim admin via the bootstrap panel."}
+              </p>
+              <BootstrapAdminPanel />
+            </div>
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
@@ -78,24 +81,15 @@ function AdminPortalPage() {
                   <TabsTrigger value="support">Support</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fund" className="pt-4">
-                  <FundTab code={code} />
+                  <FundTab />
                 </TabsContent>
                 <TabsContent value="brand" className="pt-4">
-                  <BrandTab code={code} />
+                  <BrandTab />
                 </TabsContent>
                 <TabsContent value="support" className="pt-4">
-                  <SupportTab code={code} />
+                  <SupportTab />
                 </TabsContent>
               </Tabs>
-              <BootstrapAdminPanel code={code} />
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => { setUnlocked(false); setCode(""); }}
-              >
-                <LogOut className="h-4 w-4 mr-2" /> Lock portal
-              </Button>
             </div>
           )}
         </CardContent>
@@ -104,7 +98,7 @@ function AdminPortalPage() {
   );
 }
 
-function FundTab({ code }: { code: string }) {
+function FundTab() {
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [senderName, setSenderName] = useState("");
@@ -117,7 +111,6 @@ function FundTab({ code }: { code: string }) {
     try {
       const res = await fund({
         data: {
-          code: code.trim(),
           accountNumber: accountNumber.trim(),
           amount: Number(amount),
           senderName: senderName.trim(),
@@ -196,7 +189,7 @@ async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-function BootstrapAdminPanel({ code }: { code: string }) {
+function BootstrapAdminPanel() {
   const claim = useServerFn(bootstrapAdmin);
   const [busy, setBusy] = useState(false);
 
@@ -208,7 +201,7 @@ function BootstrapAdminPanel({ code }: { code: string }) {
         toast.error("Sign in first, then return here to claim admin.");
         return;
       }
-      const res = await claim({ data: { code: code.trim() } });
+      const res = await claim();
       if (res.ok) toast.success("You are now an admin on this project.");
       else toast.message(res.reason ?? "Admin already exists");
     } catch (err) {
@@ -234,7 +227,7 @@ function BootstrapAdminPanel({ code }: { code: string }) {
   );
 }
 
-function BrandTab({ code }: { code: string }) {
+function BrandTab() {
   const brand = useBrand();
   const qc = useQueryClient();
   const update = useServerFn(updateBrandSettings);
@@ -285,7 +278,6 @@ function BrandTab({ code }: { code: string }) {
     try {
       await update({
         data: {
-          code: code.trim(),
           bankName: bankName.trim(),
           tagline,
           supportEmail,
@@ -312,7 +304,7 @@ function BrandTab({ code }: { code: string }) {
   const resetLogo = async () => {
     setSaving(true);
     try {
-      await update({ data: { code: code.trim(), logoDataUrl: null } });
+      await update({ data: { logoDataUrl: null } });
       await qc.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Logo reset to default");
     } catch (err) {
@@ -324,7 +316,7 @@ function BrandTab({ code }: { code: string }) {
   const resetMark = async () => {
     setSaving(true);
     try {
-      await update({ data: { code: code.trim(), markDataUrl: null } });
+      await update({ data: { markDataUrl: null } });
       await qc.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Mark reset to default");
     } catch (err) {
@@ -409,7 +401,7 @@ function BrandTab({ code }: { code: string }) {
   );
 }
 
-function SupportTab({ code }: { code: string }) {
+function SupportTab() {
   const brand = useBrand();
   const qc = useQueryClient();
   const update = useServerFn(updateBrandSettings);
@@ -439,7 +431,6 @@ function SupportTab({ code }: { code: string }) {
     try {
       await update({
         data: {
-          code: code.trim(),
           supportEnabled: enabled,
           supportWhatsapp: whatsapp.trim(),
           supportTelegram: telegram.trim(),

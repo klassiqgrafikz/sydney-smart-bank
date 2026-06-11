@@ -34,22 +34,26 @@ function Withdraw() {
     setLoading(true);
     const methodLabel = method === "bank" ? "Bank Transfer" : method === "cash" ? "Cash Pickup" : "International Withdrawal";
     const desc = `Withdrawal via ${methodLabel}`;
-    const { data: tx, error: txErr } = await supabase.from("transactions").insert({
-      user_id: profile.id, amount: amt, transaction_type: "withdraw",
-      description: desc, sender_name: `${profile.first_name} ${profile.last_name}`,
-    }).select().single();
-    if (txErr || !tx) { setLoading(false); return toast.error(txErr?.message ?? "Failed"); }
-    const { error: bErr } = await supabase.rpc("adjust_own_balance", { delta: -amt });
-    if (bErr) { setLoading(false); return toast.error(bErr.message); }
+    const { data: wRes, error: wErr } = await supabase.rpc("execute_withdrawal", {
+      _amount: amt,
+      _description: desc,
+    });
+    if (wErr) { setLoading(false); return toast.error(wErr.message); }
+    const wRow = Array.isArray(wRes) ? wRes[0] : wRes;
+    const { data: tx } = await supabase
+      .from("transactions")
+      .select("transaction_id, created_at")
+      .eq("id", wRow?.transaction_id)
+      .single();
     qc.invalidateQueries({ queryKey: ["profile"] });
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
     qc.invalidateQueries({ queryKey: ["transactions"] });
     toast.success("Withdrawal successful");
     setReceipt({
-      transactionId: tx.transaction_id,
+      transactionId: tx?.transaction_id ?? "",
       transactionType: "withdraw",
       amount: amt,
-      date: tx.created_at,
+      date: tx?.created_at ?? new Date().toISOString(),
       description: desc,
       extra: [{ label: "Method", value: methodLabel }],
     });

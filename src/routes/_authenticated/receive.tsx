@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { recordReceivedPayment } from "@/lib/banking.functions";
 import { useProfile } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,7 @@ function Receive() {
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [lookup, setLookup] = useState<{ status: "idle" | "searching" | "found" | "not_found" }>({ status: "idle" });
   const lookupSeq = useRef(0);
+  const record = useServerFn(recordReceivedPayment);
 
   useEffect(() => {
     const acct = f.sender_account.trim();
@@ -50,22 +53,29 @@ function Receive() {
     const amt = parseFloat(f.amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
     setLoading(true);
-    const { data: tx, error: txErr } = await supabase.from("transactions").insert({
-      user_id: profile.id, sender_name: f.sender, receiver_name: `${profile.first_name} ${profile.last_name}`,
-      amount: amt, transaction_type: "receive", description: f.reference,
-    }).select().single();
-    if (txErr || !tx) { setLoading(false); return toast.error(txErr?.message ?? "Failed"); }
-    const { error: bErr } = await supabase.rpc("adjust_own_balance", { delta: amt });
-    if (bErr) { setLoading(false); return toast.error(bErr.message); }
+    let res;
+    try {
+      res = await record({
+        data: {
+          senderName: f.sender,
+          senderAccount: f.sender_account.trim() || undefined,
+          amount: amt,
+          reference: f.reference,
+        },
+      });
+    } catch (err) {
+      setLoading(false);
+      return toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Failed");
+    }
     qc.invalidateQueries({ queryKey: ["profile"] });
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
     qc.invalidateQueries({ queryKey: ["transactions"] });
     toast.success("Funds received");
     setReceipt({
-      transactionId: tx.transaction_id,
+      transactionId: res.transactionId,
       transactionType: "receive",
       amount: amt,
-      date: tx.created_at,
+      date: res.createdAt,
       counterparty: f.sender,
       counterpartyLabel: "Sender",
       reference: f.reference,

@@ -1,10 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-
-const ADMIN_CODE = "1975";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const adminFundAccount = createServerFn({ method: "POST" })
-  .inputValidator((input: { code: string; accountNumber: string; amount: number; senderName: string }) => {
-    if (!input || typeof input.code !== "string") throw new Error("Invalid request");
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { accountNumber: string; amount: number; senderName: string }) => {
     const accountNumber = String(input.accountNumber ?? "").trim();
     const amount = Number(input.amount);
     const senderName = String(input.senderName ?? "").trim();
@@ -15,13 +14,16 @@ export const adminFundAccount = createServerFn({ method: "POST" })
     if (senderName.length < 1 || senderName.length > 100) {
       throw new Error("Invalid sender name");
     }
-    return { code: input.code, accountNumber, amount, senderName };
+    return { accountNumber, amount, senderName };
   })
-  .handler(async ({ data }) => {
-    if (data.code !== ADMIN_CODE) {
-      throw new Error("Invalid access code");
-    }
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: isAdmin, error: rErr } = await supabaseAdmin.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (rErr) throw new Error(rErr.message);
+    if (!isAdmin) throw new Error("Forbidden: admin only");
 
     const { data: profile, error: pErr } = await supabaseAdmin
       .from("profiles")

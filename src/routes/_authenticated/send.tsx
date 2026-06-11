@@ -97,6 +97,53 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     if (amt > Number(profile.balance)) return toast.error("Insufficient balance");
     setLoading(true);
 
+    if (type === "domestic") {
+      const { data: txRes, error: txErr } = await supabase.rpc("execute_transfer", {
+        _recipient_account: f.account_number,
+        _amount: amt,
+        _description: `Domestic transfer — ${f.reference || "no reference"}`,
+        _reference: f.reference || undefined,
+      });
+      if (txErr) { setLoading(false); return toast.error(txErr.message); }
+      const row = Array.isArray(txRes) ? txRes[0] : txRes;
+      await supabase.from("transfers").insert({
+        user_id: profile.id,
+        transfer_type: type,
+        recipient_name: f.recipient_name,
+        recipient_bank: f.recipient_bank,
+        account_number: f.account_number,
+        amount: amt,
+        reference: f.reference,
+      });
+      const { data: tx } = await supabase
+        .from("transactions")
+        .select("transaction_id, created_at")
+        .eq("id", row?.sender_tx_id)
+        .single();
+      qc.invalidateQueries({ queryKey: ["profile"] });
+      qc.invalidateQueries({ queryKey: ["recent-tx"] });
+      qc.invalidateQueries({ queryKey: ["transactions"] });
+      toast.success("Transfer successful");
+      setLoading(false);
+      onDone({
+        transactionId: tx?.transaction_id ?? "",
+        transactionType: "send",
+        amount: amt,
+        date: tx?.created_at ?? new Date().toISOString(),
+        counterparty: f.recipient_name,
+        counterpartyLabel: "Recipient",
+        reference: f.reference,
+        description: "Domestic transfer",
+        extra: [
+          { label: "Recipient Bank", value: f.recipient_bank },
+          { label: "Account Number", value: f.account_number },
+        ],
+      });
+      setF({ recipient_name: "", recipient_bank: "", account_number: "", amount: "", reference: "", country: "", swift_code: "", routing_number: "", iban: "" });
+      return;
+    }
+
+    // International: debit only (no in-system recipient), via execute_withdrawal-style debit
     const { error: tErr } = await supabase.from("transfers").insert({
       user_id: profile.id,
       transfer_type: type,
@@ -112,31 +159,17 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     });
     if (tErr) { setLoading(false); return toast.error(tErr.message); }
 
-    const { data: tx, error: txErr } = await supabase
+    const { data: wRes, error: wErr } = await supabase.rpc("execute_withdrawal", {
+      _amount: amt,
+      _description: `International transfer — ${f.reference || "no reference"}`,
+    });
+    if (wErr) { setLoading(false); return toast.error(wErr.message); }
+    const wRow = Array.isArray(wRes) ? wRes[0] : wRes;
+    const { data: tx } = await supabase
       .from("transactions")
-      .insert({
-        user_id: profile.id,
-        sender_name: `${profile.first_name} ${profile.last_name}`,
-        receiver_name: f.recipient_name,
-        amount: amt,
-        transaction_type: "send",
-        description: `${type === "domestic" ? "Domestic" : "International"} transfer — ${f.reference || "no reference"}`,
-      })
-      .select()
+      .select("transaction_id, created_at")
+      .eq("id", wRow?.transaction_id)
       .single();
-    if (txErr || !tx) { setLoading(false); return toast.error(txErr?.message ?? "Failed"); }
-
-    const { error: bErr } = await supabase.rpc("adjust_own_balance", { delta: -amt });
-    if (bErr) { setLoading(false); return toast.error(bErr.message); }
-
-    if (type === "domestic") {
-      await supabase.rpc("credit_account_by_number", {
-        _account_number: f.account_number,
-        _amount: amt,
-        _sender_name: `${profile.first_name} ${profile.last_name}`,
-        _description: `Transfer received — ${f.reference || "no reference"}`,
-      });
-    }
 
     qc.invalidateQueries({ queryKey: ["profile"] });
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
@@ -144,14 +177,14 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     toast.success("Transfer successful");
     setLoading(false);
     onDone({
-      transactionId: tx.transaction_id,
+      transactionId: tx?.transaction_id ?? "",
       transactionType: "send",
       amount: amt,
-      date: tx.created_at,
+      date: tx?.created_at ?? new Date().toISOString(),
       counterparty: f.recipient_name,
       counterpartyLabel: "Recipient",
       reference: f.reference,
-      description: `${type === "domestic" ? "Domestic" : "International"} transfer`,
+      description: "International transfer",
       extra: [
         { label: "Recipient Bank", value: f.recipient_bank },
         { label: "Account Number", value: f.account_number },

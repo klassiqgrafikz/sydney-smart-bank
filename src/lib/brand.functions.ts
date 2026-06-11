@@ -1,11 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-
-const ADMIN_CODE = "1975";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const updateBrandSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(
     (input: {
-      code: string;
       bankName?: string;
       tagline?: string;
       supportEmail?: string;
@@ -19,7 +18,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       supportChatUrl?: string;
       supportMessage?: string;
     }) => {
-      if (!input || typeof input.code !== "string") throw new Error("Invalid request");
+      if (!input) throw new Error("Invalid request");
       const str = (v: unknown, max: number) => {
         if (v === undefined) return undefined;
         const s = String(v ?? "").trim();
@@ -35,7 +34,6 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
         return s;
       };
       return {
-        code: input.code,
         bankName: str(input.bankName, 100),
         tagline: str(input.tagline, 200),
         supportEmail: str(input.supportEmail, 200),
@@ -51,9 +49,14 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       };
     },
   )
-  .handler(async ({ data }) => {
-    if (data.code !== ADMIN_CODE) throw new Error("Invalid access code");
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: isAdmin, error: rErr } = await supabaseAdmin.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (rErr) throw new Error(rErr.message);
+    if (!isAdmin) throw new Error("Forbidden: admin only");
     const patch: {
       bank_name?: string;
       tagline?: string;
