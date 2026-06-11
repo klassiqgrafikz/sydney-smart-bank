@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Shield, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import bankMark from "@/assets/bank-of-sydney-mark.jpeg.asset.json";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Bank of Sydney" }] }),
@@ -64,11 +65,9 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="relative hidden flex-col justify-between p-10 text-white md:flex" style={{ background: "var(--gradient-hero)" }}>
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15">
-            <Shield className="h-4 w-4" />
-          </div>
-          Bank of Sydney
+        <Link to="/" className="flex items-center gap-3 font-semibold">
+          <img src={bankMark.url} alt="Bank of Sydney" className="h-10 w-10 rounded-lg bg-white object-contain p-1" />
+          <span className="text-lg">Bank of Sydney</span>
         </Link>
         <div>
           <p className="text-3xl font-semibold leading-tight">Premium global banking, designed for how you actually live.</p>
@@ -78,6 +77,11 @@ function AuthPage() {
       </div>
       <div className="flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
+          <div className="mb-6 flex flex-col items-center text-center">
+            <img src={bankMark.url} alt="Bank of Sydney" className="h-20 w-20 object-contain" />
+            <h1 className="mt-3 text-xl font-bold tracking-tight">Bank of Sydney</h1>
+            <p className="text-xs text-muted-foreground">Premium Online Banking</p>
+          </div>
           <Tabs defaultValue="signin">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign in</TabsTrigger>
