@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Bank of Sydney — Secure Online Banking" },
       { name: "twitter:description", content: "Premium online banking with Bank of Sydney. Send, receive, and manage money worldwide." },
-      { name: "google-site-verification", content: "EfPimSUr0iN8c03paeg7Grk76vhJKjIFN47t6HF3edk" },
+      { name: "google-site-verification", content: "KFI2wc0ptTWDIhXQFrsi4JjZ17vPhElBvy6iGJo_iJ4" },
     ],
     links: [
       {
