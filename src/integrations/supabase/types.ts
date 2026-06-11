@@ -261,6 +261,13 @@ export type Database = {
         Args: { _target_user_id: string }
         Returns: undefined
       }
+      admin_reset_user_by_account: {
+        Args: { _account_number: string }
+        Returns: {
+          full_name: string
+          user_id: string
+        }[]
+      }
       credit_account_by_number: {
         Args: {
           _account_number: string

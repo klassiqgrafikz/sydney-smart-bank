@@ -76,6 +76,22 @@ function AdminPortal() {
     qc.invalidateQueries();
   };
 
+  const [resetAcct, setResetAcct] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const resetByAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const acct = resetAcct.trim();
+    if (!acct) return toast.error("Enter an account number");
+    setResetting(true);
+    const { data, error } = await supabase.rpc("admin_reset_user_by_account", { _account_number: acct });
+    setResetting(false);
+    if (error) return toast.error(error.message);
+    const hit = Array.isArray(data) ? data[0] : null;
+    toast.success(hit?.full_name ? `Wiped balance and history for ${hit.full_name}` : "Account reset");
+    setResetAcct("");
+    qc.invalidateQueries();
+  };
+
   const submitAdjust = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
@@ -179,6 +195,52 @@ function AdminPortal() {
               </TableBody>
             </Table>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Eraser className="h-5 w-5 text-destructive" /> Account reset</CardTitle>
+          <CardDescription>Erase a customer's balance and entire transaction history in one click using their account number.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={resetByAccount} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="reset-acct">Account number</Label>
+              <Input
+                id="reset-acct"
+                inputMode="numeric"
+                placeholder="e.g. 123456789012345"
+                value={resetAcct}
+                onChange={(e) => setResetAcct(e.target.value)}
+              />
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="destructive" disabled={!resetAcct.trim() || resetting}>
+                  {resetting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eraser className="mr-2 h-4 w-4" />}
+                  Erase balance & history
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset this account?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Account <span className="font-mono">{resetAcct.trim()}</span> will have its balance set to {formatCurrency(0)} and all transactions permanently deleted. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => { e.preventDefault(); resetByAccount(e as unknown as React.FormEvent); }}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Yes, erase
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </form>
         </CardContent>
       </Card>
 
