@@ -7,7 +7,7 @@ import { LayoutDashboard, User, Send, Download, Banknote, ListChecks, FileText, 
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-profile";
-import bankMark from "@/assets/bank-of-sydney-mark.png.asset.json";
+import { useBrand } from "@/hooks/use-brand";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -27,6 +27,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: isAdmin } = useIsAdmin();
+  const brand = useBrand();
 
   const handleSignOut = async () => {
     await qc.cancelQueries();
@@ -39,10 +40,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <img src={bankMark.url} alt="Bank of Sydney" className="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-0.5" />
+          <img src={brand.markUrl} alt={brand.bankName} className="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-0.5" />
           {!collapsed && (
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-sidebar-foreground">Bank of Sydney</p>
+              <p className="text-sm font-semibold text-sidebar-foreground">{brand.bankName}</p>
               <p className="text-[10px] text-sidebar-foreground/60">Premium Banking</p>
             </div>
           )}

@@ -19,7 +19,11 @@ export function generateStatementPDF(opts: {
   openingBalance: number;
   closingBalance: number;
   transactions: StatementTx[];
+  bankName?: string;
+  supportEmail?: string;
 }) {
+  const bankName = opts.bankName || "Bank of Sydney";
+  const supportEmail = opts.supportEmail || "support@bankofsydney.com";
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -29,7 +33,7 @@ export function generateStatementPDF(opts: {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("Bank of Sydney", 14, 12);
+  doc.text(bankName, 14, 12);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("Official Account Statement", 14, 20);
@@ -86,10 +90,11 @@ export function generateStatementPDF(opts: {
   doc.setFontSize(8);
   doc.setTextColor(120, 120, 120);
   doc.text(
-    "This statement is generated electronically by Bank of Sydney. For inquiries, contact support@bankofsydney.com",
+    `This statement is generated electronically by ${bankName}. For inquiries, contact ${supportEmail}`,
     14,
     finalY + 12,
   );
 
-  doc.save(`SydneyTrust_Statement_${formatDateShort(opts.periodStart)}_${formatDateShort(opts.periodEnd)}.pdf`);
+  const safe = bankName.replace(/[^a-z0-9]+/gi, "_");
+  doc.save(`${safe}_Statement_${formatDateShort(opts.periodStart)}_${formatDateShort(opts.periodEnd)}.pdf`);
 }
