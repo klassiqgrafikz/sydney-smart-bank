@@ -44,7 +44,15 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     if (data.code !== ADMIN_CODE) throw new Error("Invalid access code");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      bank_name?: string;
+      tagline?: string;
+      support_email?: string;
+      support_phone?: string;
+      address?: string;
+      logo_data_url?: string | null;
+      mark_data_url?: string | null;
+    } = {};
     if (data.bankName !== undefined && data.bankName.length > 0) patch.bank_name = data.bankName;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
     if (data.supportEmail !== undefined) patch.support_email = data.supportEmail;
