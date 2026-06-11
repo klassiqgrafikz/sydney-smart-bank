@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Camera, Loader2 } from "lucide-react";
-import { formatAccountNumber } from "@/lib/format";
+import { CopyAccountNumber } from "@/components/copy-account-number";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Sydney Trust" }] }),
@@ -101,7 +101,12 @@ function ProfilePage() {
             <div className="space-y-1.5"><Label>Email</Label><Input value={profile?.email ?? ""} disabled /></div>
             <div className="space-y-1.5"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Country</Label><Input value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Account number</Label><Input value={formatAccountNumber(profile?.account_number)} disabled className="font-mono" /></div>
+            <div className="space-y-1.5">
+              <Label>Account number</Label>
+              <div className="flex h-10 items-center rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <CopyAccountNumber value={profile?.account_number} />
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end">
