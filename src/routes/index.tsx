@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Shield, Globe, Zap, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
+import { LiveSupport } from "@/components/live-support";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -93,6 +94,10 @@ function Landing() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <LiveSupport />
       </section>
 
       <footer className="border-t bg-muted/30">
