@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wallet, ShieldCheck } from "lucide-react";
-import { formatCurrency, formatAccountNumber, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { CopyAccountNumber } from "@/components/copy-account-number";
 import {
   VirtualCardWidget,
   CashFlowWidget,
@@ -52,9 +53,9 @@ function Dashboard() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs uppercase tracking-wider text-white/60">Account Number</p>
-              <p className="mt-1 font-mono text-lg">
-                {isLoading ? <Skeleton className="h-6 w-44 bg-white/20" /> : formatAccountNumber(profile?.account_number)}
-              </p>
+              <div className="mt-1 text-lg">
+                {isLoading ? <Skeleton className="h-6 w-44 bg-white/20" /> : <CopyAccountNumber value={profile?.account_number} className="text-white" />}
+              </div>
             </div>
             <Badge className="bg-white/15 text-white hover:bg-white/20"><ShieldCheck className="mr-1 h-3 w-3" /> {profile?.account_status ?? "active"}</Badge>
           </div>
