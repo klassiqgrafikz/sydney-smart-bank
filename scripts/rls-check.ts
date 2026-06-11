@@ -160,8 +160,17 @@ async function main() {
         amount: 1,
       }),
     );
-    await expectDenied("anon cannot update a profile", () =>
-      anon.from("profiles").update({ first_name: "hacked" }).eq("id", a.id),
+    await expectDenied(
+      "anon cannot update a profile",
+      async () => {
+        const res = await anon
+          .from("profiles")
+          .update({ first_name: "hacked" })
+          .eq("id", a.id)
+          .select();
+        return { data: res.data, error: res.error };
+      },
+      { emptyOk: true },
     );
 
     // ---------- Seed legitimate rows as each user ----------
