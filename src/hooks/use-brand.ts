@@ -17,6 +17,7 @@ export interface BrandSettings {
   supportChatUrl: string;
   supportMessage: string;
   maintenanceMode: boolean;
+  footerText: string;
 }
 
 export const BRAND_DEFAULTS: BrandSettings = {
@@ -33,6 +34,7 @@ export const BRAND_DEFAULTS: BrandSettings = {
   supportChatUrl: "",
   supportMessage: "Hi! I need help with my account.",
   maintenanceMode: false,
+  footerText: "© 2026 Bank of Sydney. All rights reserved.",
 };
 
 export function useBrand(): BrandSettings {
@@ -40,7 +42,7 @@ export function useBrand(): BrandSettings {
     queryKey: ["app-settings"],
     queryFn: async (): Promise<BrandSettings> => {
       const { data: { session } } = await supabase.auth.getSession();
-      const publicCols = "bank_name, tagline, logo_data_url, mark_data_url, support_enabled, maintenance_mode";
+      const publicCols = "bank_name, tagline, logo_data_url, mark_data_url, support_enabled, maintenance_mode, footer_text";
       const fullCols = `${publicCols}, support_email, support_phone, address, support_whatsapp, support_telegram, support_chat_url, support_message`;
       const { data, error } = await supabase
         .from("app_settings")
@@ -64,6 +66,7 @@ export function useBrand(): BrandSettings {
         supportChatUrl: str("support_chat_url"),
         supportMessage: str("support_message") || BRAND_DEFAULTS.supportMessage,
         maintenanceMode: !!row.maintenance_mode,
+        footerText: str("footer_text") || BRAND_DEFAULTS.footerText,
       };
     },
     staleTime: 60_000,

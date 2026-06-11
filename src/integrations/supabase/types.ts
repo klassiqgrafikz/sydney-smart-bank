@@ -19,6 +19,7 @@ export type Database = {
           address: string
           bank_name: string
           created_at: string
+          footer_text: string
           id: string
           logo_data_url: string | null
           maintenance_mode: boolean
@@ -37,6 +38,7 @@ export type Database = {
           address?: string
           bank_name?: string
           created_at?: string
+          footer_text?: string
           id?: string
           logo_data_url?: string | null
           maintenance_mode?: boolean
@@ -55,6 +57,7 @@ export type Database = {
           address?: string
           bank_name?: string
           created_at?: string
+          footer_text?: string
           id?: string
           logo_data_url?: string | null
           maintenance_mode?: boolean

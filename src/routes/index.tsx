@@ -109,7 +109,7 @@ function Landing() {
 
       <footer className="border-t bg-[#0a2756] text-white/80">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm">
-          © {new Date().getFullYear()} {brand.bankName}. All rights reserved.
+          {brand.footerText}
         </div>
       </footer>
     </div>

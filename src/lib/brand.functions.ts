@@ -18,6 +18,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       supportChatUrl?: string;
       supportMessage?: string;
       maintenanceMode?: boolean;
+      footerText?: string;
     }) => {
       if (!input) throw new Error("Invalid request");
       const str = (v: unknown, max: number) => {
@@ -49,6 +50,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
         supportMessage: str(input.supportMessage, 300),
         maintenanceMode:
           typeof input.maintenanceMode === "boolean" ? input.maintenanceMode : undefined,
+        footerText: str(input.footerText, 300),
       };
     },
   )
@@ -74,6 +76,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       support_chat_url?: string;
       support_message?: string;
       maintenance_mode?: boolean;
+      footer_text?: string;
     } = {};
     if (data.bankName !== undefined && data.bankName.length > 0) patch.bank_name = data.bankName;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
@@ -88,6 +91,7 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
     if (data.supportChatUrl !== undefined) patch.support_chat_url = data.supportChatUrl;
     if (data.supportMessage !== undefined) patch.support_message = data.supportMessage;
     if (data.maintenanceMode !== undefined) patch.maintenance_mode = data.maintenanceMode;
+    if (data.footerText !== undefined) patch.footer_text = data.footerText;
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabaseAdmin
       .from("app_settings")
