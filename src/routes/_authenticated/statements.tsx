@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Download, Loader2 } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
+import { useBrand } from "@/hooks/use-brand";
 
 export const Route = createFileRoute("/_authenticated/statements")({
   head: () => ({ meta: [{ title: "Statements — Bank of Sydney" }] }),
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/statements")({
 
 function Statements() {
   const { data: profile } = useProfile();
+  const brand = useBrand();
   const today = new Date().toISOString().split("T")[0];
   const monthAgo = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
   const [from, setFrom] = useState(monthAgo);
@@ -52,6 +54,8 @@ function Statements() {
       periodEnd: end,
       openingBalance: opening,
       closingBalance: closing,
+      bankName: brand.bankName,
+      supportEmail: brand.supportEmail,
       transactions: txs.map((t) => ({
         created_at: t.created_at,
         transaction_id: t.transaction_id,

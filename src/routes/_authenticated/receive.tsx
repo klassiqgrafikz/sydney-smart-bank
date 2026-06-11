@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
+import { useBrand } from "@/hooks/use-brand";
 
 export const Route = createFileRoute("/_authenticated/receive")({
   head: () => ({ meta: [{ title: "Receive Money — Bank of Sydney" }] }),
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/_authenticated/receive")({
 
 function Receive() {
   const { data: profile } = useProfile();
+  const brand = useBrand();
   const qc = useQueryClient();
   const [f, setF] = useState({ sender: "", amount: "", reference: "" });
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,7 @@ function Receive() {
         <CardContent className="grid gap-3 text-sm md:grid-cols-2">
           <Detail k="Account holder" v={getAccountHolderName(profile)} />
           <Detail k="Account number" v={<CopyAccountNumber value={profile?.account_number} />} />
-          <Detail k="Bank" v="Bank of Sydney" />
+          <Detail k="Bank" v={brand.bankName} />
         </CardContent>
       </Card>
 

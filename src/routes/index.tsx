@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Shield, Globe, Zap, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
-import bankWordmark from "@/assets/bank-of-sydney-logo.png.asset.json";
+import { useBrand } from "@/hooks/use-brand";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -16,12 +16,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const brand = useBrand();
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link to="/" aria-label="Bank of Sydney" className="flex items-center">
-            <img src={bankWordmark.url} alt="Bank of Sydney" className="h-9 w-auto md:h-10" />
+          <Link to="/" aria-label={brand.bankName} className="flex items-center gap-2">
+            <img src={brand.logoUrl} alt={brand.bankName} className="h-9 w-auto md:h-10" />
+            <span className="hidden text-base font-semibold sm:inline">{brand.bankName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
@@ -95,7 +97,9 @@ function Landing() {
 
       <footer className="border-t bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Bank of Sydney. All rights reserved.
+          © {new Date().getFullYear()} {brand.bankName}. All rights reserved.
+          {brand.supportEmail ? <> · <a href={`mailto:${brand.supportEmail}`} className="hover:underline">{brand.supportEmail}</a></> : null}
+          {brand.supportPhone ? <> · {brand.supportPhone}</> : null}
         </div>
       </footer>
     </div>

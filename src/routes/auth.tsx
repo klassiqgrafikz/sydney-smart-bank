@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import bankMark from "@/assets/bank-of-sydney-mark.png.asset.json";
+import { useBrand } from "@/hooks/use-brand";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Bank of Sydney" }] }),
@@ -55,6 +55,7 @@ function PasswordInput({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const brand = useBrand();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -66,20 +67,20 @@ function AuthPage() {
     <div className="grid min-h-screen md:grid-cols-2">
       <div className="relative hidden flex-col justify-between p-10 text-white md:flex" style={{ background: "var(--gradient-hero)" }}>
         <Link to="/" className="flex items-center gap-3 font-semibold">
-          <img src={bankMark.url} alt="Bank of Sydney" className="h-10 w-10 rounded-lg bg-white object-contain p-1" />
-          <span className="text-lg">Bank of Sydney</span>
+          <img src={brand.markUrl} alt={brand.bankName} className="h-10 w-10 rounded-lg bg-white object-contain p-1" />
+          <span className="text-lg">{brand.bankName}</span>
         </Link>
         <div>
-          <p className="text-3xl font-semibold leading-tight">Premium global banking, designed for how you actually live.</p>
+          <p className="text-3xl font-semibold leading-tight">{brand.tagline}</p>
           <p className="mt-4 text-white/70">Send money across 150+ countries with rates you'll love and security you can trust.</p>
         </div>
-        <p className="text-xs text-white/50">© {new Date().getFullYear()} Bank of Sydney</p>
+        <p className="text-xs text-white/50">© {new Date().getFullYear()} {brand.bankName}</p>
       </div>
       <div className="flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
           <div className="mb-6 flex flex-col items-center text-center">
-            <img src={bankMark.url} alt="Bank of Sydney" className="h-20 w-20 object-contain" />
-            <h1 className="mt-3 text-xl font-bold tracking-tight">Bank of Sydney</h1>
+            <img src={brand.markUrl} alt={brand.bankName} className="h-20 w-20 object-contain" />
+            <h1 className="mt-3 text-xl font-bold tracking-tight">{brand.bankName}</h1>
             <p className="text-xs text-muted-foreground">Premium Online Banking</p>
           </div>
           <Tabs defaultValue="signin">
@@ -121,6 +122,7 @@ function GoogleButton() {
 
 function SignInForm() {
   const navigate = useNavigate();
+  const brand = useBrand();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -204,7 +206,7 @@ function SignInForm() {
     <Card className="border-0 shadow-none md:border md:shadow-sm">
       <CardHeader>
         <CardTitle>Welcome back</CardTitle>
-        <CardDescription>Sign in to your Bank of Sydney account.</CardDescription>
+        <CardDescription>Sign in to your {brand.bankName} account.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="space-y-4">
@@ -236,6 +238,7 @@ function SignInForm() {
 
 function SignUpForm() {
   const navigate = useNavigate();
+  const brand = useBrand();
   const [form, setForm] = useState({
     first_name: "", last_name: "", email: "", phone: "", country: "", password: "", confirm: "",
   });
@@ -263,7 +266,7 @@ function SignUpForm() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created — welcome to Bank of Sydney!");
+    toast.success(`Account created — welcome to ${brand.bankName}!`);
     navigate({ to: "/dashboard" });
   };
 
