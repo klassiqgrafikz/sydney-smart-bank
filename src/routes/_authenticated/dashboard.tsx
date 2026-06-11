@@ -11,6 +11,7 @@ import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wal
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CopyAccountNumber } from "@/components/copy-account-number";
 import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
+import { LiveSupport } from "@/components/live-support";
 import {
   VirtualCardWidget,
   CashFlowWidget,
@@ -170,6 +171,7 @@ function Dashboard() {
         </Card>
       </div>
       <TransactionDetailsDialog tx={selectedTx} open={!!selectedTx} onOpenChange={(v) => !v && setSelectedTx(null)} />
+      <LiveSupport />
     </div>
   );
 }
