@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Shield, Globe, Zap, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
+import bankWordmark from "@/assets/bank-of-sydney-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
