@@ -189,7 +189,7 @@ async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-function BootstrapAdminPanel({ code }: { code: string }) {
+function BootstrapAdminPanel() {
   const claim = useServerFn(bootstrapAdmin);
   const [busy, setBusy] = useState(false);
 
@@ -201,7 +201,7 @@ function BootstrapAdminPanel({ code }: { code: string }) {
         toast.error("Sign in first, then return here to claim admin.");
         return;
       }
-      const res = await claim({ data: { code: code.trim() } });
+      const res = await claim();
       if (res.ok) toast.success("You are now an admin on this project.");
       else toast.message(res.reason ?? "Admin already exists");
     } catch (err) {
@@ -227,7 +227,7 @@ function BootstrapAdminPanel({ code }: { code: string }) {
   );
 }
 
-function BrandTab({ code }: { code: string }) {
+function BrandTab() {
   const brand = useBrand();
   const qc = useQueryClient();
   const update = useServerFn(updateBrandSettings);
@@ -278,7 +278,6 @@ function BrandTab({ code }: { code: string }) {
     try {
       await update({
         data: {
-          code: code.trim(),
           bankName: bankName.trim(),
           tagline,
           supportEmail,
@@ -305,7 +304,7 @@ function BrandTab({ code }: { code: string }) {
   const resetLogo = async () => {
     setSaving(true);
     try {
-      await update({ data: { code: code.trim(), logoDataUrl: null } });
+      await update({ data: { logoDataUrl: null } });
       await qc.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Logo reset to default");
     } catch (err) {
@@ -317,7 +316,7 @@ function BrandTab({ code }: { code: string }) {
   const resetMark = async () => {
     setSaving(true);
     try {
-      await update({ data: { code: code.trim(), markDataUrl: null } });
+      await update({ data: { markDataUrl: null } });
       await qc.invalidateQueries({ queryKey: ["app-settings"] });
       toast.success("Mark reset to default");
     } catch (err) {
@@ -402,7 +401,7 @@ function BrandTab({ code }: { code: string }) {
   );
 }
 
-function SupportTab({ code }: { code: string }) {
+function SupportTab() {
   const brand = useBrand();
   const qc = useQueryClient();
   const update = useServerFn(updateBrandSettings);
@@ -432,7 +431,6 @@ function SupportTab({ code }: { code: string }) {
     try {
       await update({
         data: {
-          code: code.trim(),
           supportEnabled: enabled,
           supportWhatsapp: whatsapp.trim(),
           supportTelegram: telegram.trim(),
