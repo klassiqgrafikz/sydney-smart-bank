@@ -60,7 +60,7 @@ export function NotificationsBell({ userId }: { userId: string }) {
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
-      .channel(`tx-${userId}`)
+      .channel(`notif-${userId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "transactions", filter: `user_id=eq.${userId}` },
@@ -70,6 +70,49 @@ export function NotificationsBell({ userId }: { userId: string }) {
           qc.invalidateQueries({ queryKey: ["notifications", userId] });
           qc.invalidateQueries({ queryKey: ["transactions"] });
           qc.invalidateQueries({ queryKey: ["profile"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "transactions", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const t = payload.new as Tx;
+          const prev = payload.old as Partial<Tx>;
+          if (prev?.status && prev.status !== t.status) {
+            toast.info(`${label(t)} — ${t.status}`, {
+              description: t.description ?? t.sender_name ?? t.receiver_name ?? undefined,
+            });
+          }
+          qc.invalidateQueries({ queryKey: ["notifications", userId] });
+          qc.invalidateQueries({ queryKey: ["transactions"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "transfers", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const tr = payload.new as { amount: number; recipient_name: string; status: string; reference: string | null };
+          toast.success(`Transfer to ${tr.recipient_name} — ${formatCurrency(tr.amount)}`, {
+            description: tr.reference ?? `Status: ${tr.status}`,
+          });
+          qc.invalidateQueries({ queryKey: ["notifications", userId] });
+          qc.invalidateQueries({ queryKey: ["transfers"] });
+          qc.invalidateQueries({ queryKey: ["profile"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "transfers", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const tr = payload.new as { amount: number; recipient_name: string; status: string };
+          const prev = payload.old as { status?: string };
+          if (prev?.status && prev.status !== tr.status) {
+            toast.info(`Transfer to ${tr.recipient_name} — ${tr.status}`, {
+              description: formatCurrency(tr.amount),
+            });
+          }
+          qc.invalidateQueries({ queryKey: ["notifications", userId] });
+          qc.invalidateQueries({ queryKey: ["transfers"] });
         },
       )
       .subscribe();
