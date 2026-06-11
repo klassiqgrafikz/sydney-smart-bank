@@ -63,7 +63,7 @@
 
 :root {
   --radius: 0.625rem;
-  /* Sydney Trust Bank — premium banking palette */
+  /* Bank of Sydney — premium banking palette */
   --background: oklch(0.985 0.005 250);
   --foreground: oklch(0.18 0.04 255);
   --card: oklch(1 0 0);

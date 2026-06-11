@@ -11,7 +11,7 @@ import { Download, Loader2 } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
 
 export const Route = createFileRoute("/_authenticated/statements")({
-  head: () => ({ meta: [{ title: "Statements — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Statements — Bank of Sydney" }] }),
   component: Statements,
 });
 

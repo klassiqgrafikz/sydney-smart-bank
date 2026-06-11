@@ -3,10 +3,11 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, User, Send, Download, Banknote, ListChecks, FileText, Settings, LogOut, Shield, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, User, Send, Download, Banknote, ListChecks, FileText, Settings, LogOut, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-profile";
+import bankMark from "@/assets/bank-of-sydney-mark.jpeg.asset.json";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -38,12 +39,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-2 px-2 py-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg" style={{ background: "var(--gradient-primary)" }}>
-            <Shield className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <img src={bankMark.url} alt="Bank of Sydney" className="h-9 w-9 shrink-0 rounded-lg object-contain bg-white p-0.5" />
           {!collapsed && (
             <div className="leading-tight">
-              <p className="text-sm font-semibold text-sidebar-foreground">Sydney Trust</p>
+              <p className="text-sm font-semibold text-sidebar-foreground">Bank of Sydney</p>
               <p className="text-[10px] text-sidebar-foreground/60">Premium Banking</p>
             </div>
           )}

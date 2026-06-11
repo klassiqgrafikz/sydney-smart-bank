@@ -11,7 +11,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { Loader2, Moon, Sun, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Settings — Bank of Sydney" }] }),
   component: SettingsPage,
 });
 
@@ -123,7 +123,7 @@ function TwoFactorSection() {
     setBusy(true);
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: "totp",
-      friendlyName: `Sydney Trust ${Date.now()}`,
+      friendlyName: `Bank of Sydney ${Date.now()}`,
     });
     setBusy(false);
     if (error || !data) return toast.error(error?.message ?? "Could not start enrollment");

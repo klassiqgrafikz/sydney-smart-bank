@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/withdraw")({
-  head: () => ({ meta: [{ title: "Withdraw — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Withdraw — Bank of Sydney" }] }),
   component: Withdraw,
 });
 

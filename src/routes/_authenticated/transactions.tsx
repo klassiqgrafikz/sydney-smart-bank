@@ -12,7 +12,7 @@ import { Search, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
-  head: () => ({ meta: [{ title: "Transactions — Sydney Trust" }] }),
+  head: () => ({ meta: [{ title: "Transactions — Bank of Sydney" }] }),
   component: TransactionsPage,
 });
 

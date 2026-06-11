@@ -7,6 +7,7 @@ import { useAvatarUrl } from "@/hooks/use-avatar-url";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ensureProfile } from "@/lib/ensure-profile";
+import bankWordmark from "@/assets/bank-of-sydney-logo.png.asset.json";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -34,8 +35,11 @@ function AuthedLayout() {
       <div className="flex min-h-screen w-full bg-muted/30">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
+          <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
             <SidebarTrigger />
+            <Link to="/dashboard" aria-label="Bank of Sydney" className="flex items-center">
+              <img src={bankWordmark.url} alt="Bank of Sydney" className="h-9 w-auto md:h-10" />
+            </Link>
             <div className="ml-auto flex items-center gap-3">
               {profile?.id ? <NotificationsBell userId={profile.id} /> : null}
               <Link to="/profile" aria-label="Profile" className="rounded-full ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
