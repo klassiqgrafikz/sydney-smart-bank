@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wallet, ShieldCheck, Wrench } from "lucide-react";
+import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wallet, ShieldCheck } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CopyAccountNumber } from "@/components/copy-account-number";
 import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
@@ -30,41 +30,6 @@ function Dashboard() {
   const brand = useBrand();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
-
-  const { data: isAdmin } = useQuery({
-    queryKey: ["is-admin", profile?.id],
-    enabled: !!profile?.id,
-    queryFn: async () => {
-      const { data } = await supabase.rpc("has_role", {
-        _user_id: profile!.id,
-        _role: "admin",
-      });
-      return !!data;
-    },
-    staleTime: 60_000,
-  });
-
-  if (brand.maintenanceMode && !isAdmin) {
-    return (
-      <div className="mx-auto flex min-h-[70vh] max-w-xl items-center">
-        <Card className="w-full text-center">
-          <CardHeader>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <Wrench className="h-7 w-7 text-primary" />
-            </div>
-            <CardTitle className="mt-3 text-2xl">Site is Under Development</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Please check back later.
-              <br />
-              <span className="mt-2 inline-block font-medium text-foreground">THANK YOU!</span>
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const { data: txs } = useQuery({
     queryKey: ["recent-tx"],
