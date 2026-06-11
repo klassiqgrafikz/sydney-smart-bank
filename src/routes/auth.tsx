@@ -12,7 +12,18 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — Bank of Sydney" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in or Create an Account — Bank of Sydney" },
+      { name: "description", content: "Sign in to your Bank of Sydney account or open a new account in minutes — secure, global online banking." },
+      { property: "og:title", content: "Sign in or Create an Account — Bank of Sydney" },
+      { property: "og:description", content: "Sign in to your Bank of Sydney account or open a new account in minutes." },
+      { property: "og:url", content: "https://sydney-smart-bank.lovable.app/auth" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://sydney-smart-bank.lovable.app/auth" },
+    ],
+  }),
   component: AuthPage,
 });
 
@@ -80,7 +91,7 @@ function AuthPage() {
         <div className="w-full max-w-md">
           <div className="mb-6 flex flex-col items-center text-center">
             <img src={brand.markUrl} alt={brand.bankName} className="h-20 w-20 object-contain" />
-            <h1 className="mt-3 text-xl font-bold tracking-tight">{brand.bankName}</h1>
+            <h1 className="mt-3 text-xl font-bold tracking-tight">Sign in or create your {brand.bankName} account</h1>
             <p className="text-xs text-muted-foreground">Premium Online Banking</p>
           </div>
           <Tabs defaultValue="signin">

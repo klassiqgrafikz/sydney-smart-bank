@@ -1,0 +1,9 @@
+# Bank of Sydney
+
+> Premium global online banking — open an account in minutes and send, receive, and manage money worldwide with bank-grade security.
+
+## Pages
+
+- [Home](/): Overview of Bank of Sydney online banking, registration, and live support.
+- [Sign in or Register](/auth): Sign in to your account or create a new Bank of Sydney account.
+- [Forgot Password](/forgot-password): Request a secure password reset link by email.

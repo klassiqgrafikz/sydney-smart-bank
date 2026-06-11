@@ -2,7 +2,7 @@ import { useBrand } from "@/hooks/use-brand";
 import { Card } from "@/components/ui/card";
 import { MessageCircle, Mail, Send, Headphones } from "lucide-react";
 
-export function LiveSupport() {
+export function LiveSupport({ hideEmail = false }: { hideEmail?: boolean } = {}) {
   const brand = useBrand();
   if (!brand.supportEnabled) return null;
 
@@ -29,7 +29,7 @@ export function LiveSupport() {
       color: "bg-sky-500/10 text-sky-600",
     });
   }
-  if (brand.supportEmail) {
+  if (brand.supportEmail && !hideEmail) {
     items.push({
       label: "Email",
       sub: brand.supportEmail,
