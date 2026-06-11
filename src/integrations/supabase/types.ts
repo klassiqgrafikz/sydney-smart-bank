@@ -241,6 +241,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_own_balance: { Args: { delta: number }; Returns: number }
       generate_account_number: { Args: never; Returns: string }
       has_role: {
         Args: {
