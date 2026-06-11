@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { adminFundAccount } from "@/lib/admin-portal.functions";
 import { updateBrandSettings } from "@/lib/brand.functions";
+import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
 import { useBrand } from "@/hooks/use-brand";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, LogOut, Upload } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
   head: () => ({ meta: [{ title: "Admin Portal" }, { name: "robots", content: "noindex,nofollow" }] }),
@@ -80,6 +82,7 @@ function AdminPortalPage() {
                   <BrandTab code={code} />
                 </TabsContent>
               </Tabs>
+              <BootstrapAdminPanel code={code} />
               <Button
                 type="button"
                 variant="ghost"
