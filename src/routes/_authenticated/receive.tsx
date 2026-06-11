@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
 import { useBrand } from "@/hooks/use-brand";
+import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
 
 export const Route = createFileRoute("/_authenticated/receive")({
   head: () => ({ meta: [{ title: "Receive Money — Bank of Sydney" }] }),
@@ -23,6 +24,7 @@ function Receive() {
   const qc = useQueryClient();
   const [f, setF] = useState({ sender: "", amount: "", reference: "" });
   const [loading, setLoading] = useState(false);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,11 +32,11 @@ function Receive() {
     const amt = parseFloat(f.amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
     setLoading(true);
-    const { error: txErr } = await supabase.from("transactions").insert({
+    const { data: tx, error: txErr } = await supabase.from("transactions").insert({
       user_id: profile.id, sender_name: f.sender, receiver_name: `${profile.first_name} ${profile.last_name}`,
       amount: amt, transaction_type: "receive", description: f.reference,
-    });
-    if (txErr) { setLoading(false); return toast.error(txErr.message); }
+    }).select().single();
+    if (txErr || !tx) { setLoading(false); return toast.error(txErr?.message ?? "Failed"); }
     const { error: bErr } = await supabase.from("profiles")
       .update({ balance: Number(profile.balance) + amt }).eq("id", profile.id);
     if (bErr) { setLoading(false); return toast.error(bErr.message); }
@@ -42,6 +44,15 @@ function Receive() {
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
     qc.invalidateQueries({ queryKey: ["transactions"] });
     toast.success("Funds received");
+    setReceipt({
+      transactionId: tx.transaction_id,
+      transactionType: "receive",
+      amount: amt,
+      date: tx.created_at,
+      counterparty: f.sender,
+      counterpartyLabel: "Sender",
+      reference: f.reference,
+    });
     setF({ sender: "", amount: "", reference: "" });
     setLoading(false);
   };
@@ -75,6 +86,12 @@ function Receive() {
           </form>
         </CardContent>
       </Card>
+      <TransactionReceiptDialog
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        title="Funds Received"
+        subtitle="Incoming payment recorded successfully."
+      />
     </div>
   );
 }
