@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           logo_data_url: string | null
+          maintenance_mode: boolean
           mark_data_url: string | null
           support_chat_url: string
           support_email: string
@@ -38,6 +39,7 @@ export type Database = {
           created_at?: string
           id?: string
           logo_data_url?: string | null
+          maintenance_mode?: boolean
           mark_data_url?: string | null
           support_chat_url?: string
           support_email?: string
@@ -55,6 +57,7 @@ export type Database = {
           created_at?: string
           id?: string
           logo_data_url?: string | null
+          maintenance_mode?: boolean
           mark_data_url?: string | null
           support_chat_url?: string
           support_email?: string
