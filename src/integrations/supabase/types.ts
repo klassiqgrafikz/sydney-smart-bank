@@ -257,6 +257,10 @@ export type Database = {
     }
     Functions: {
       adjust_own_balance: { Args: { delta: number }; Returns: number }
+      admin_reset_user: {
+        Args: { _target_user_id: string }
+        Returns: undefined
+      }
       credit_account_by_number: {
         Args: {
           _account_number: string
