@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          address: string
+          bank_name: string
+          created_at: string
+          id: string
+          logo_data_url: string | null
+          mark_data_url: string | null
+          support_email: string
+          support_phone: string
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          logo_data_url?: string | null
+          mark_data_url?: string | null
+          support_email?: string
+          support_phone?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          logo_data_url?: string | null
+          mark_data_url?: string | null
+          support_email?: string
+          support_phone?: string
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
