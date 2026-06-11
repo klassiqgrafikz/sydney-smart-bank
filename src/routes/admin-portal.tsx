@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, LogOut, Upload, KeyRound, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -71,15 +72,19 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
+                  <TabsTrigger value="support">Support</TabsTrigger>
                 </TabsList>
                 <TabsContent value="fund" className="pt-4">
                   <FundTab code={code} />
                 </TabsContent>
                 <TabsContent value="brand" className="pt-4">
                   <BrandTab code={code} />
+                </TabsContent>
+                <TabsContent value="support" className="pt-4">
+                  <SupportTab code={code} />
                 </TabsContent>
               </Tabs>
               <BootstrapAdminPanel code={code} />
@@ -399,6 +404,98 @@ function BrandTab({ code }: { code: string }) {
 
       <Button type="submit" className="w-full" disabled={saving}>
         {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : <><Upload className="h-4 w-4 mr-2" /> Save branding</>}
+      </Button>
+    </form>
+  );
+}
+
+function SupportTab({ code }: { code: string }) {
+  const brand = useBrand();
+  const qc = useQueryClient();
+  const update = useServerFn(updateBrandSettings);
+  const [enabled, setEnabled] = useState(brand.supportEnabled);
+  const [whatsapp, setWhatsapp] = useState(brand.supportWhatsapp);
+  const [telegram, setTelegram] = useState(brand.supportTelegram);
+  const [chatUrl, setChatUrl] = useState(brand.supportChatUrl);
+  const [email, setEmail] = useState(brand.supportEmail);
+  const [message, setMessage] = useState(brand.supportMessage);
+  const [saving, setSaving] = useState(false);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    setEnabled(brand.supportEnabled);
+    setWhatsapp(brand.supportWhatsapp);
+    setTelegram(brand.supportTelegram);
+    setChatUrl(brand.supportChatUrl);
+    setEmail(brand.supportEmail);
+    setMessage(brand.supportMessage);
+    initialized.current = true;
+  }, [brand]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await update({
+        data: {
+          code: code.trim(),
+          supportEnabled: enabled,
+          supportWhatsapp: whatsapp.trim(),
+          supportTelegram: telegram.trim(),
+          supportChatUrl: chatUrl.trim(),
+          supportEmail: email.trim(),
+          supportMessage: message,
+        },
+      });
+      await qc.invalidateQueries({ queryKey: ["app-settings"] });
+      toast.success(enabled ? "Live support is now visible to users" : "Support settings saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="h-4 w-4 text-primary" />
+          <div>
+            <div className="text-sm font-medium">Show live support on homepage & dashboard</div>
+            <p className="text-xs text-muted-foreground">When off, users see no support widget.</p>
+          </div>
+        </div>
+        <Switch checked={enabled} onCheckedChange={setEnabled} />
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="wa">WhatsApp number</Label>
+          <Input id="wa" placeholder="+15551234567" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} maxLength={50} />
+          <p className="text-xs text-muted-foreground">International format, no spaces.</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="tg">Telegram username</Label>
+          <Input id="tg" placeholder="yourbankhelp" value={telegram} onChange={(e) => setTelegram(e.target.value)} maxLength={100} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="em">Support email</Label>
+          <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={200} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="ch">Chat link (Smartsupp / Tawk / Crisp / Intercom)</Label>
+          <Input id="ch" placeholder="https://widget.smartsupp.com/..." value={chatUrl} onChange={(e) => setChatUrl(e.target.value)} maxLength={500} />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="msg">Default pre-filled message</Label>
+          <Textarea id="msg" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={300} />
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={saving}>
+        {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : "Save support settings"}
       </Button>
     </form>
   );

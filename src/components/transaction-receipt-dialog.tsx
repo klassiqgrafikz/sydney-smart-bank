@@ -36,6 +36,8 @@ export function TransactionReceiptDialog({
     if (!receipt || !profile) return;
     const opts: ReceiptOpts = {
       bankName: brand.bankName,
+      bankTagline: brand.tagline,
+      logoDataUrl: brand.logoUrl?.startsWith("data:") ? brand.logoUrl : undefined,
       supportEmail: brand.supportEmail,
       supportPhone: brand.supportPhone,
       address: brand.address,

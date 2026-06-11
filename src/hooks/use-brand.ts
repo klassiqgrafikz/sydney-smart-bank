@@ -11,6 +11,11 @@ export interface BrandSettings {
   address: string;
   logoUrl: string;
   markUrl: string;
+  supportEnabled: boolean;
+  supportWhatsapp: string;
+  supportTelegram: string;
+  supportChatUrl: string;
+  supportMessage: string;
 }
 
 export const BRAND_DEFAULTS: BrandSettings = {
@@ -21,6 +26,11 @@ export const BRAND_DEFAULTS: BrandSettings = {
   address: "",
   logoUrl: defaultLogo.url,
   markUrl: defaultMark.url,
+  supportEnabled: false,
+  supportWhatsapp: "",
+  supportTelegram: "",
+  supportChatUrl: "",
+  supportMessage: "Hi! I need help with my account.",
 };
 
 export function useBrand(): BrandSettings {
@@ -29,7 +39,7 @@ export function useBrand(): BrandSettings {
     queryFn: async (): Promise<BrandSettings> => {
       const { data, error } = await supabase
         .from("app_settings")
-        .select("bank_name, tagline, support_email, support_phone, address, logo_data_url, mark_data_url")
+        .select("bank_name, tagline, support_email, support_phone, address, logo_data_url, mark_data_url, support_enabled, support_whatsapp, support_telegram, support_chat_url, support_message")
         .eq("id", "singleton")
         .maybeSingle();
       if (error || !data) return BRAND_DEFAULTS;
@@ -41,6 +51,11 @@ export function useBrand(): BrandSettings {
         address: data.address || "",
         logoUrl: data.logo_data_url || BRAND_DEFAULTS.logoUrl,
         markUrl: data.mark_data_url || BRAND_DEFAULTS.markUrl,
+        supportEnabled: !!data.support_enabled,
+        supportWhatsapp: data.support_whatsapp || "",
+        supportTelegram: data.support_telegram || "",
+        supportChatUrl: data.support_chat_url || "",
+        supportMessage: data.support_message || BRAND_DEFAULTS.supportMessage,
       };
     },
     staleTime: 60_000,
