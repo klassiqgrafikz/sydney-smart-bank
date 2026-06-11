@@ -1,10 +1,11 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useProfile } from "@/hooks/use-profile";
-import { Bell } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAvatarUrl } from "@/hooks/use-avatar-url";
+import { NotificationsBell } from "@/components/notifications-bell";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthedLayout() {
   const { data: profile } = useProfile();
+  const avatarUrl = useAvatarUrl(profile?.avatar_url);
   const initials = `${profile?.first_name?.[0] ?? ""}${profile?.last_name?.[0] ?? ""}`.toUpperCase() || "ST";
 
   return (
@@ -33,12 +35,13 @@ function AuthedLayout() {
           <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur">
             <SidebarTrigger />
             <div className="ml-auto flex items-center gap-3">
-              <button className="rounded-full p-2 text-muted-foreground hover:bg-accent">
-                <Bell className="h-4 w-4" />
-              </button>
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
-              </Avatar>
+              {profile?.id ? <NotificationsBell userId={profile.id} /> : null}
+              <Link to="/profile" aria-label="Profile" className="rounded-full ring-offset-background transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                <Avatar className="h-8 w-8">
+                  {avatarUrl ? <AvatarImage src={avatarUrl} alt="Profile picture" /> : null}
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
+                </Avatar>
+              </Link>
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
