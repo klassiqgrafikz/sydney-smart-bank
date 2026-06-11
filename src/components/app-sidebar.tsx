@@ -7,7 +7,7 @@ import { LayoutDashboard, User, Send, Download, Banknote, ListChecks, FileText, 
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useIsAdmin } from "@/hooks/use-profile";
-import bankMark from "@/assets/bank-of-sydney-mark.jpeg.asset.json";
+import bankMark from "@/assets/bank-of-sydney-mark.png.asset.json";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
