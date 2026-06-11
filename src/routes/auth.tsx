@@ -135,6 +135,13 @@ function SignInForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setLoading(false);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+        return toast.error("Email or password is incorrect. If you don't have an account yet, please sign up.");
+      }
+      if (msg.includes("email not confirmed")) {
+        return toast.error("Please confirm your email before signing in.");
+      }
       return toast.error(error.message);
     }
     const { data: aal, error: aalErr } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
