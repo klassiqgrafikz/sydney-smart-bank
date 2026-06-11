@@ -76,6 +76,22 @@ function AdminPortal() {
     qc.invalidateQueries();
   };
 
+  const [resetAcct, setResetAcct] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const resetByAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const acct = resetAcct.trim();
+    if (!acct) return toast.error("Enter an account number");
+    setResetting(true);
+    const { data, error } = await supabase.rpc("admin_reset_user_by_account", { _account_number: acct });
+    setResetting(false);
+    if (error) return toast.error(error.message);
+    const hit = Array.isArray(data) ? data[0] : null;
+    toast.success(hit?.full_name ? `Wiped balance and history for ${hit.full_name}` : "Account reset");
+    setResetAcct("");
+    qc.invalidateQueries();
+  };
+
   const submitAdjust = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
