@@ -13,7 +13,6 @@ import { CopyAccountNumber } from "@/components/copy-account-number";
 import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
 import { LiveSupport } from "@/components/live-support";
 import {
-  VirtualCardWidget,
   CashFlowWidget,
   SpendingBreakdownWidget,
   SavingsGoalWidget,
