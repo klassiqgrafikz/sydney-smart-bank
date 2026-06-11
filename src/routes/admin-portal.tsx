@@ -240,6 +240,7 @@ function BrandTab() {
   const [supportEmail, setSupportEmail] = useState(brand.supportEmail);
   const [supportPhone, setSupportPhone] = useState(brand.supportPhone);
   const [address, setAddress] = useState(brand.address);
+  const [footerText, setFooterText] = useState(brand.footerText);
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [markDataUrl, setMarkDataUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -255,6 +256,7 @@ function BrandTab() {
       setSupportEmail(brand.supportEmail);
       setSupportPhone(brand.supportPhone);
       setAddress(brand.address);
+      setFooterText(brand.footerText);
       initialized.current = true;
     }
   }, [brand]);
@@ -287,6 +289,7 @@ function BrandTab() {
           supportEmail,
           supportPhone,
           address,
+          footerText,
           ...(logoDataUrl !== null ? { logoDataUrl } : {}),
           ...(markDataUrl !== null ? { markDataUrl } : {}),
         },
@@ -352,6 +355,17 @@ function BrandTab() {
         <div className="space-y-2 md:col-span-2">
           <Label htmlFor="ad">Address</Label>
           <Textarea id="ad" rows={2} value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="ft">Homepage footer text</Label>
+          <Input
+            id="ft"
+            value={footerText}
+            onChange={(e) => setFooterText(e.target.value)}
+            maxLength={300}
+            placeholder="© 2026 Bank of Sydney. All rights reserved."
+          />
+          <p className="text-xs text-muted-foreground">Shown at the bottom of the homepage.</p>
         </div>
       </div>
 
