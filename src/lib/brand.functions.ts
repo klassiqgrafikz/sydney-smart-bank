@@ -13,6 +13,11 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       address?: string;
       logoDataUrl?: string | null;
       markDataUrl?: string | null;
+      supportEnabled?: boolean;
+      supportWhatsapp?: string;
+      supportTelegram?: string;
+      supportChatUrl?: string;
+      supportMessage?: string;
     }) => {
       if (!input || typeof input.code !== "string") throw new Error("Invalid request");
       const str = (v: unknown, max: number) => {
@@ -38,6 +43,11 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
         address: str(input.address, 500),
         logoDataUrl: dataUrl(input.logoDataUrl),
         markDataUrl: dataUrl(input.markDataUrl),
+        supportEnabled: typeof input.supportEnabled === "boolean" ? input.supportEnabled : undefined,
+        supportWhatsapp: str(input.supportWhatsapp, 50),
+        supportTelegram: str(input.supportTelegram, 100),
+        supportChatUrl: str(input.supportChatUrl, 500),
+        supportMessage: str(input.supportMessage, 300),
       };
     },
   )
@@ -52,6 +62,11 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       address?: string;
       logo_data_url?: string | null;
       mark_data_url?: string | null;
+      support_enabled?: boolean;
+      support_whatsapp?: string;
+      support_telegram?: string;
+      support_chat_url?: string;
+      support_message?: string;
     } = {};
     if (data.bankName !== undefined && data.bankName.length > 0) patch.bank_name = data.bankName;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
@@ -60,6 +75,11 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
     if (data.address !== undefined) patch.address = data.address;
     if (data.logoDataUrl !== undefined) patch.logo_data_url = data.logoDataUrl;
     if (data.markDataUrl !== undefined) patch.mark_data_url = data.markDataUrl;
+    if (data.supportEnabled !== undefined) patch.support_enabled = data.supportEnabled;
+    if (data.supportWhatsapp !== undefined) patch.support_whatsapp = data.supportWhatsapp;
+    if (data.supportTelegram !== undefined) patch.support_telegram = data.supportTelegram;
+    if (data.supportChatUrl !== undefined) patch.support_chat_url = data.supportChatUrl;
+    if (data.supportMessage !== undefined) patch.support_message = data.supportMessage;
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabaseAdmin
       .from("app_settings")
