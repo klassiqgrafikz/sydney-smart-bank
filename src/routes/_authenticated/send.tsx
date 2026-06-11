@@ -8,23 +8,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2 } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { Loader2 } from "lucide-react";
+import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
 
 export const Route = createFileRoute("/_authenticated/send")({
   head: () => ({ meta: [{ title: "Send Money — Bank of Sydney" }] }),
   component: SendMoney,
 });
 
-interface Receipt {
-  recipient: string; amount: number; reference: string; tx_id: string; date: string;
-}
-
 function SendMoney() {
   const [tab, setTab] = useState("domestic");
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -43,36 +38,17 @@ function SendMoney() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full bg-emerald-500/10 text-emerald-600">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <DialogTitle className="text-center">Transfer Successful</DialogTitle>
-            <DialogDescription className="text-center">Your funds are on the way.</DialogDescription>
-          </DialogHeader>
-          {receipt && (
-            <div className="space-y-2 rounded-lg bg-muted/50 p-4 text-sm">
-              <Row k="Recipient" v={receipt.recipient} />
-              <Row k="Amount" v={formatCurrency(receipt.amount)} />
-              <Row k="Reference" v={receipt.reference || "—"} />
-              <Row k="Transaction ID" v={<span className="font-mono text-xs">{receipt.tx_id}</span>} />
-              <Row k="Date" v={formatDate(receipt.date)} />
-            </div>
-          )}
-          <DialogFooter><Button onClick={() => setReceipt(null)} className="w-full">Done</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TransactionReceiptDialog
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        title="Transfer Successful"
+        subtitle="Your funds are on the way."
+      />
     </div>
   );
 }
 
-function Row({ k, v }: { k: string; v: React.ReactNode }) {
-  return <div className="flex items-center justify-between"><span className="text-muted-foreground">{k}</span><span className="font-medium">{v}</span></div>;
-}
-
-function TransferForm({ type, onDone }: { type: "domestic" | "international"; onDone: (r: Receipt) => void }) {
+function TransferForm({ type, onDone }: { type: "domestic" | "international"; onDone: (r: ReceiptData) => void }) {
   const { data: profile } = useProfile();
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -128,7 +104,28 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     qc.invalidateQueries({ queryKey: ["transactions"] });
     toast.success("Transfer successful");
     setLoading(false);
-    onDone({ recipient: f.recipient_name, amount: amt, reference: f.reference, tx_id: tx.transaction_id, date: tx.created_at });
+    onDone({
+      transactionId: tx.transaction_id,
+      transactionType: "send",
+      amount: amt,
+      date: tx.created_at,
+      counterparty: f.recipient_name,
+      counterpartyLabel: "Recipient",
+      reference: f.reference,
+      description: `${type === "domestic" ? "Domestic" : "International"} transfer`,
+      extra: [
+        { label: "Recipient Bank", value: f.recipient_bank },
+        { label: "Account Number", value: f.account_number },
+        ...(type === "international"
+          ? [
+              { label: "Country", value: f.country },
+              { label: "SWIFT / BIC", value: f.swift_code },
+              ...(f.routing_number ? [{ label: "Routing Number", value: f.routing_number }] : []),
+              ...(f.iban ? [{ label: "IBAN", value: f.iban }] : []),
+            ]
+          : []),
+      ],
+    });
     setF({ recipient_name: "", recipient_bank: "", account_number: "", amount: "", reference: "", country: "", swift_code: "", routing_number: "", iban: "" });
   };
 

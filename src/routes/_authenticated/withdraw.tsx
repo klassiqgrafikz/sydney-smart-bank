@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
 
 export const Route = createFileRoute("/_authenticated/withdraw")({
   head: () => ({ meta: [{ title: "Withdraw — Bank of Sydney" }] }),
@@ -22,6 +23,7 @@ function Withdraw() {
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("bank");
   const [loading, setLoading] = useState(false);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,12 +32,13 @@ function Withdraw() {
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
     if (amt > Number(profile.balance)) return toast.error("Insufficient balance");
     setLoading(true);
-    const desc = `Withdrawal via ${method === "bank" ? "Bank Transfer" : method === "cash" ? "Cash Pickup" : "International Withdrawal"}`;
-    const { error: txErr } = await supabase.from("transactions").insert({
+    const methodLabel = method === "bank" ? "Bank Transfer" : method === "cash" ? "Cash Pickup" : "International Withdrawal";
+    const desc = `Withdrawal via ${methodLabel}`;
+    const { data: tx, error: txErr } = await supabase.from("transactions").insert({
       user_id: profile.id, amount: amt, transaction_type: "withdraw",
       description: desc, sender_name: `${profile.first_name} ${profile.last_name}`,
-    });
-    if (txErr) { setLoading(false); return toast.error(txErr.message); }
+    }).select().single();
+    if (txErr || !tx) { setLoading(false); return toast.error(txErr?.message ?? "Failed"); }
     const { error: bErr } = await supabase.from("profiles")
       .update({ balance: Number(profile.balance) - amt }).eq("id", profile.id);
     if (bErr) { setLoading(false); return toast.error(bErr.message); }
@@ -43,6 +46,14 @@ function Withdraw() {
     qc.invalidateQueries({ queryKey: ["recent-tx"] });
     qc.invalidateQueries({ queryKey: ["transactions"] });
     toast.success("Withdrawal successful");
+    setReceipt({
+      transactionId: tx.transaction_id,
+      transactionType: "withdraw",
+      amount: amt,
+      date: tx.created_at,
+      description: desc,
+      extra: [{ label: "Method", value: methodLabel }],
+    });
     setAmount("");
     setLoading(false);
   };
@@ -73,6 +84,12 @@ function Withdraw() {
           </form>
         </CardContent>
       </Card>
+      <TransactionReceiptDialog
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        title="Withdrawal Successful"
+        subtitle="Your withdrawal request has been processed."
+      />
     </div>
   );
 }
