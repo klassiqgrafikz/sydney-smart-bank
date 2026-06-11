@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
 import { useBrand } from "@/hooks/use-brand";
 import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
@@ -22,9 +22,27 @@ function Receive() {
   const { data: profile } = useProfile();
   const brand = useBrand();
   const qc = useQueryClient();
-  const [f, setF] = useState({ sender: "", amount: "", reference: "" });
+  const [f, setF] = useState({ sender: "", sender_account: "", amount: "", reference: "" });
   const [loading, setLoading] = useState(false);
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+  const [lookup, setLookup] = useState<{ status: "idle" | "searching" | "found" | "not_found" }>({ status: "idle" });
+  const lookupSeq = useRef(0);
+
+  useEffect(() => {
+    const acct = f.sender_account.trim();
+    if (acct.length < 8) { setLookup({ status: "idle" }); return; }
+    const seq = ++lookupSeq.current;
+    setLookup({ status: "searching" });
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("lookup_account_by_number", { _account_number: acct });
+      if (seq !== lookupSeq.current) return;
+      const hit = Array.isArray(data) ? data[0] : null;
+      if (error || !hit) { setLookup({ status: "not_found" }); return; }
+      setLookup({ status: "found" });
+      setF((p) => ({ ...p, sender: hit.full_name ?? p.sender }));
+    }, 350);
+    return () => clearTimeout(t);
+  }, [f.sender_account]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +70,7 @@ function Receive() {
       counterpartyLabel: "Sender",
       reference: f.reference,
     });
-    setF({ sender: "", amount: "", reference: "" });
+    setF({ sender: "", sender_account: "", amount: "", reference: "" });
     setLoading(false);
   };
 
@@ -78,6 +96,19 @@ function Receive() {
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Sender account number</Label>
+              <Input value={f.sender_account} onChange={(e) => setF({ ...f, sender_account: e.target.value })} placeholder="Type to auto-fill name" />
+              {lookup.status === "searching" && (
+                <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="h-3 w-3 animate-spin" /> Looking up customer…</p>
+              )}
+              {lookup.status === "found" && (
+                <p className="flex items-center gap-1.5 text-xs text-emerald-600"><CheckCircle2 className="h-3 w-3" /> Customer found — name auto-filled</p>
+              )}
+              {lookup.status === "not_found" && (
+                <p className="flex items-center gap-1.5 text-xs text-destructive"><XCircle className="h-3 w-3" /> No customer with this account number</p>
+              )}
+            </div>
             <div className="space-y-1.5"><Label>Sender name</Label><Input required value={f.sender} onChange={(e) => setF({ ...f, sender: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Amount (USD)</Label><Input required type="number" step="0.01" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Reference</Label><Input value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} /></div>
