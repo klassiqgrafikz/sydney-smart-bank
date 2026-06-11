@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -12,7 +13,9 @@ import { ensureProfile } from "@/lib/ensure-profile";
 import { useBrand } from "@/hooks/use-brand";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { LogOut, User as UserIcon, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { LogOut, User as UserIcon, Trash2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { deleteOwnAccount } from "@/lib/account.functions";
 
@@ -41,6 +44,21 @@ function AuthedLayout() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const deleteFn = useServerFn(deleteOwnAccount);
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin", profile?.id],
+    enabled: !!profile?.id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_role", {
+        _user_id: profile!.id,
+        _role: "admin",
+      });
+      return !!data;
+    },
+    staleTime: 60_000,
+  });
+
+  const maintenanceActive = !!brand.maintenanceMode && !isAdmin;
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -106,7 +124,30 @@ function AuthedLayout() {
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6">
-            <Outlet />
+            {maintenanceActive ? (
+              <div className="mx-auto flex min-h-[70vh] max-w-xl items-center">
+                <Card className="w-full text-center">
+                  <CardHeader>
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                      <Wrench className="h-7 w-7 text-primary" />
+                    </div>
+                    <CardTitle className="mt-3 text-2xl">Site is Under Development</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">
+                      Please check back later.
+                      <br />
+                      <span className="mt-2 inline-block font-medium text-foreground">THANK YOU!</span>
+                    </p>
+                    <Button variant="outline" onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-4 w-4" /> Sign out
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </main>
         </div>
       </div>
