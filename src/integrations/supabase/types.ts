@@ -277,6 +277,26 @@ export type Database = {
         }
         Returns: string
       }
+      execute_transfer: {
+        Args: {
+          _amount: number
+          _description: string
+          _recipient_account: string
+          _reference?: string
+        }
+        Returns: {
+          new_balance: number
+          recipient_tx_id: string
+          sender_tx_id: string
+        }[]
+      }
+      execute_withdrawal: {
+        Args: { _amount: number; _description: string }
+        Returns: {
+          new_balance: number
+          transaction_id: string
+        }[]
+      }
       generate_account_number: { Args: never; Returns: string }
       has_role: {
         Args: {
