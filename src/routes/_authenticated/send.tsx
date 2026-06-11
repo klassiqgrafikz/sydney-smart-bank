@@ -102,7 +102,7 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
         _recipient_account: f.account_number,
         _amount: amt,
         _description: `Domestic transfer — ${f.reference || "no reference"}`,
-        _reference: f.reference || null,
+        _reference: f.reference || undefined,
       });
       if (txErr) { setLoading(false); return toast.error(txErr.message); }
       const row = Array.isArray(txRes) ? txRes[0] : txRes;
