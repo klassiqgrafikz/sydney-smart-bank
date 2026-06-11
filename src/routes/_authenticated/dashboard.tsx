@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wallet, ShieldCheck } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CopyAccountNumber } from "@/components/copy-account-number";
+import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
 import {
   VirtualCardWidget,
   CashFlowWidget,
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const { data: profile, isLoading } = useProfile();
   const [showBalance, setShowBalance] = useState(true);
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
 
   const { data: txs } = useQuery({
     queryKey: ["recent-tx"],
@@ -129,7 +131,12 @@ function Dashboard() {
                 {txs.map((t) => {
                   const incoming = ["receive", "credit"].includes(t.transaction_type);
                   return (
-                    <div key={t.id} className="flex items-center justify-between py-3">
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedTx(t)}
+                      className="flex w-full items-center justify-between rounded-md py-3 text-left transition hover:bg-muted/50 focus:bg-muted/50 focus:outline-none"
+                    >
                       <div className="flex items-center gap-3">
                         <div className={`grid h-9 w-9 place-items-center rounded-full ${incoming ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"}`}>
                           {incoming ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
@@ -145,7 +152,7 @@ function Dashboard() {
                         </p>
                         <p className="text-xs text-muted-foreground">{formatDate(t.created_at)}</p>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -162,6 +169,7 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      <TransactionDetailsDialog tx={selectedTx} open={!!selectedTx} onOpenChange={(v) => !v && setSelectedTx(null)} />
     </div>
   );
 }
