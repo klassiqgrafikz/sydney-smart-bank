@@ -135,6 +135,13 @@ function SignInForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setLoading(false);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+        return toast.error("Email or password is incorrect. If you don't have an account yet, please sign up.");
+      }
+      if (msg.includes("email not confirmed")) {
+        return toast.error("Please confirm your email before signing in.");
+      }
       return toast.error(error.message);
     }
     const { data: aal, error: aalErr } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -251,7 +258,7 @@ function SignUpForm() {
     if (form.password.length < 6) return toast.error("Password must be at least 6 characters");
     if (form.password !== form.confirm) return toast.error("Passwords don't match");
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -265,7 +272,18 @@ function SignUpForm() {
       },
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        return toast.error("This email is already registered. Please sign in instead.");
+      }
+      return toast.error(error.message);
+    }
+    // Supabase returns a user with empty identities[] when the email is already registered
+    // (to prevent email enumeration). Detect that case and show a clear message.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      return toast.error("This email is already registered. Please sign in instead.");
+    }
     toast.success(`Account created — welcome to ${brand.bankName}!`);
     navigate({ to: "/dashboard" });
   };
