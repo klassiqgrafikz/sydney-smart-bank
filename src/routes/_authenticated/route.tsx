@@ -40,7 +40,6 @@ function AuthedLayout() {
             <SidebarTrigger />
             <Link to="/dashboard" aria-label={brand.bankName} className="flex items-center gap-2">
               <img src={brand.logoUrl} alt={brand.bankName} className="h-9 w-auto md:h-10" />
-              <span className="hidden text-base font-semibold sm:inline">{brand.bankName}</span>
             </Link>
             <div className="ml-auto flex items-center gap-3">
               {profile?.id ? <NotificationsBell userId={profile.id} /> : null}
