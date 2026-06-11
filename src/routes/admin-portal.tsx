@@ -100,10 +100,6 @@ function AdminPortalPage() {
 }
 
 function FundTab({ code }: { code: string }) {
-  return <FundTabInner code={code} />;
-}
-
-function FundTabInner({ code }: { code: string }) {
   const [accountNumber, setAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [senderName, setSenderName] = useState("");
