@@ -8,7 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Bank of Sydney" }] }),
+  head: () => ({
+    meta: [
+      { title: "Reset Password — Bank of Sydney" },
+      { name: "description", content: "Set a new password for your Bank of Sydney account to securely regain access." },
+      { property: "og:title", content: "Reset Password — Bank of Sydney" },
+      { property: "og:description", content: "Choose a new password for your Bank of Sydney account." },
+      { property: "og:url", content: "https://sydney-smart-bank.lovable.app/reset-password" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://sydney-smart-bank.lovable.app/reset-password" },
+    ],
+  }),
   ssr: false,
   component: ResetPassword,
 });
