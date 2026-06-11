@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useBrand } from "@/hooks/use-brand";
 import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
 
 export const Route = createFileRoute("/_authenticated/send")({
@@ -50,6 +51,7 @@ function SendMoney() {
 
 function TransferForm({ type, onDone }: { type: "domestic" | "international"; onDone: (r: ReceiptData) => void }) {
   const { data: profile } = useProfile();
+  const brand = useBrand();
   const qc = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [f, setF] = useState({
@@ -57,6 +59,35 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
     country: "", swift_code: "", routing_number: "", iban: "",
   });
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setF((p) => ({ ...p, [k]: e.target.value }));
+
+  const [lookup, setLookup] = useState<{ status: "idle" | "searching" | "found" | "not_found"; }>(
+    { status: "idle" },
+  );
+  const lookupSeq = useRef(0);
+
+  useEffect(() => {
+    if (type !== "domestic") { setLookup({ status: "idle" }); return; }
+    const acct = f.account_number.trim();
+    if (acct.length < 8) { setLookup({ status: "idle" }); return; }
+    const seq = ++lookupSeq.current;
+    setLookup({ status: "searching" });
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase.rpc("lookup_account_by_number", { _account_number: acct });
+      if (seq !== lookupSeq.current) return;
+      const hit = Array.isArray(data) ? data[0] : null;
+      if (error || !hit) {
+        setLookup({ status: "not_found" });
+        return;
+      }
+      setLookup({ status: "found" });
+      setF((p) => ({
+        ...p,
+        recipient_name: hit.full_name ?? p.recipient_name,
+        recipient_bank: brand.bankName,
+      }));
+    }, 350);
+    return () => clearTimeout(t);
+  }, [f.account_number, type, brand.bankName]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +168,24 @@ function TransferForm({ type, onDone }: { type: "domestic" | "international"; on
         {type === "international" && <Field label="SWIFT / BIC" v={f.swift_code} onChange={set("swift_code")} required />}
         {type === "international" && <Field label="Routing number" v={f.routing_number} onChange={set("routing_number")} />}
         {type === "international" && <Field label="IBAN" v={f.iban} onChange={set("iban")} />}
-        <Field label="Account number" v={f.account_number} onChange={set("account_number")} required />
+        <div className="space-y-1.5">
+          <Field label="Account number" v={f.account_number} onChange={set("account_number")} required />
+          {type === "domestic" && lookup.status === "searching" && (
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> Looking up customer…
+            </p>
+          )}
+          {type === "domestic" && lookup.status === "found" && (
+            <p className="flex items-center gap-1.5 text-xs text-emerald-600">
+              <CheckCircle2 className="h-3 w-3" /> Customer found — name and bank auto-filled
+            </p>
+          )}
+          {type === "domestic" && lookup.status === "not_found" && (
+            <p className="flex items-center gap-1.5 text-xs text-destructive">
+              <XCircle className="h-3 w-3" /> No customer with this account number
+            </p>
+          )}
+        </div>
         <Field label="Amount (USD)" v={f.amount} onChange={set("amount")} type="number" required />
         <div className="md:col-span-2"><Field label="Reference" v={f.reference} onChange={set("reference")} placeholder="e.g. Invoice #2412" /></div>
       </div>

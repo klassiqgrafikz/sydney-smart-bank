@@ -250,6 +250,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      lookup_account_by_number: {
+        Args: { _account_number: string }
+        Returns: {
+          account_number: string
+          full_name: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
