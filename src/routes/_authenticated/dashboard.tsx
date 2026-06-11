@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Eye, EyeOff, Send, Download, Banknote, ArrowUpRight, ArrowDownLeft, Wallet, ShieldCheck } from "lucide-react";
 import { formatCurrency, formatAccountNumber, formatDate } from "@/lib/format";
+import {
+  VirtualCardWidget,
+  CashFlowWidget,
+  SpendingBreakdownWidget,
+  SavingsGoalWidget,
+  ExchangeRatesWidget,
+} from "@/components/dashboard-widgets";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Sydney Trust" }] }),
@@ -89,6 +96,17 @@ function Dashboard() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <VirtualCardWidget profile={profile} />
+        <div className="lg:col-span-2"><CashFlowWidget /></div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <SavingsGoalWidget balance={Number(profile?.balance ?? 0)} />
+        <SpendingBreakdownWidget />
+        <ExchangeRatesWidget />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
