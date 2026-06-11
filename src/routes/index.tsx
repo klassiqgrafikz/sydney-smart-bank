@@ -24,7 +24,6 @@ function Landing() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Link to="/" aria-label={brand.bankName} className="flex items-center gap-2">
             <img src={brand.logoUrl} alt={brand.bankName} className="h-9 w-auto md:h-10" />
-            <span className="hidden text-base font-semibold sm:inline">{brand.bankName}</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link to="/auth"><Button variant="ghost">Sign in</Button></Link>
@@ -103,8 +102,6 @@ function Landing() {
       <footer className="border-t bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground">
           © {new Date().getFullYear()} {brand.bankName}. All rights reserved.
-          {brand.supportEmail ? <> · <a href={`mailto:${brand.supportEmail}`} className="hover:underline">{brand.supportEmail}</a></> : null}
-          {brand.supportPhone ? <> · {brand.supportPhone}</> : null}
         </div>
       </footer>
     </div>
