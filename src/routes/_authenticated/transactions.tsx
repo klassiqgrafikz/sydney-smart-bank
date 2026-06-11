@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, ChevronLeft, ChevronRight, Inbox } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({ meta: [{ title: "Transactions — Bank of Sydney" }] }),
@@ -22,6 +23,7 @@ function TransactionsPage() {
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [page, setPage] = useState(0);
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["transactions"],
@@ -96,7 +98,11 @@ function TransactionsPage() {
                     </TableCell>
                   </TableRow>
                 ) : pageRows.map((t) => (
-                  <TableRow key={t.id}>
+                  <TableRow
+                    key={t.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => setSelectedTx(t)}
+                  >
                     <TableCell className="whitespace-nowrap">{formatDate(t.created_at)}</TableCell>
                     <TableCell className="font-mono text-xs">{t.transaction_id}</TableCell>
                     <TableCell className="capitalize">{t.transaction_type}</TableCell>
@@ -118,6 +124,7 @@ function TransactionsPage() {
           </div>
         </CardContent>
       </Card>
+      <TransactionDetailsDialog tx={selectedTx} open={!!selectedTx} onOpenChange={(v) => !v && setSelectedTx(null)} />
     </div>
   );
 }
