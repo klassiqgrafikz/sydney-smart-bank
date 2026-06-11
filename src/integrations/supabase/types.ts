@@ -22,8 +22,13 @@ export type Database = {
           id: string
           logo_data_url: string | null
           mark_data_url: string | null
+          support_chat_url: string
           support_email: string
+          support_enabled: boolean
+          support_message: string
           support_phone: string
+          support_telegram: string
+          support_whatsapp: string
           tagline: string
           updated_at: string
         }
@@ -34,8 +39,13 @@ export type Database = {
           id?: string
           logo_data_url?: string | null
           mark_data_url?: string | null
+          support_chat_url?: string
           support_email?: string
+          support_enabled?: boolean
+          support_message?: string
           support_phone?: string
+          support_telegram?: string
+          support_whatsapp?: string
           tagline?: string
           updated_at?: string
         }
@@ -46,8 +56,13 @@ export type Database = {
           id?: string
           logo_data_url?: string | null
           mark_data_url?: string | null
+          support_chat_url?: string
           support_email?: string
+          support_enabled?: boolean
+          support_message?: string
           support_phone?: string
+          support_telegram?: string
+          support_whatsapp?: string
           tagline?: string
           updated_at?: string
         }
