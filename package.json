@@ -4,10 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vinxi dev",
-    "prebuild": "npm install -g vinxi",
-    "build": "vinxi build --preset vercel",
-    "start": "vinxi start"
+    "dev": "vite dev",
+    "build": "vite build",
+    "start": "vite preview"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
