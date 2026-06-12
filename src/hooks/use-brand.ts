@@ -34,7 +34,7 @@ export const BRAND_DEFAULTS: BrandSettings = {
   supportChatUrl: "",
   supportMessage: "Hi! I need help with my account.",
   maintenanceMode: false,
-  footerText: "© 2026 Bank of Sydney. All rights reserved.",
+  footerText: "© 2005 Bank of Sydney. All rights reserved.",
 };
 
 export function useBrand(): BrandSettings {
