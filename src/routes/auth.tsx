@@ -85,7 +85,7 @@ function AuthPage() {
           <p className="text-3xl font-semibold leading-tight">{brand.tagline}</p>
           <p className="mt-4 text-white/70">Send money across 150+ countries with rates you'll love and security you can trust.</p>
         </div>
-        <p className="text-xs text-white/50">© {new Date().getFullYear()} {brand.bankName}</p>
+        <p className="text-xs text-white/50">{brand.footerText}</p>
       </div>
       <div className="flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-md">
