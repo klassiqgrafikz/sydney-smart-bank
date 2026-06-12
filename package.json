@@ -4,13 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "vinxi dev",
+    "prebuild": "npm install -g vinxi",
     "build": "vinxi build --preset vercel",
-    "build:dev": "vite build --mode development",
-    "preview": "vite preview --host 0.0.0.0 --port $PORT",
-    "lint": "eslint .",
-    "format": "prettier --write .",
-    "rls:check": "bun scripts/rls-check.ts"
+    "start": "vinxi start"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
