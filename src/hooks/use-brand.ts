@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import defaultLogo from "@/assets/bank-of-sydney-logo.png.asset.json";
-import defaultMark from "@/assets/bank-of-sydney-mark.png.asset.json";
+
+const defaultLogoUrl = "/brand/bank-of-sydney-logo.png";
+const defaultMarkUrl = "/brand/bank-of-sydney-mark.png";
 
 export interface BrandSettings {
   bankName: string;
@@ -26,8 +27,8 @@ export const BRAND_DEFAULTS: BrandSettings = {
   supportEmail: "support@bankofsydney.com",
   supportPhone: "",
   address: "",
-  logoUrl: defaultLogo.url,
-  markUrl: defaultMark.url,
+  logoUrl: defaultLogoUrl,
+  markUrl: defaultMarkUrl,
   supportEnabled: false,
   supportWhatsapp: "",
   supportTelegram: "",
