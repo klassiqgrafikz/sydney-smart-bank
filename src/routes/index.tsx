@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Search, Menu } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
 import { LiveSupport } from "@/components/live-support";
-import heroImage from "@/assets/landing-hero-banking.jpg";
+
+const heroImage = "/brand/landing-hero-banking.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
