@@ -24,6 +24,7 @@ export type Database = {
           logo_data_url: string | null
           maintenance_mode: boolean
           mark_data_url: string | null
+          support_chat_script: string
           support_chat_url: string
           support_email: string
           support_enabled: boolean
@@ -43,6 +44,7 @@ export type Database = {
           logo_data_url?: string | null
           maintenance_mode?: boolean
           mark_data_url?: string | null
+          support_chat_script?: string
           support_chat_url?: string
           support_email?: string
           support_enabled?: boolean
@@ -62,6 +64,7 @@ export type Database = {
           logo_data_url?: string | null
           maintenance_mode?: boolean
           mark_data_url?: string | null
+          support_chat_script?: string
           support_chat_url?: string
           support_email?: string
           support_enabled?: boolean
@@ -182,6 +185,33 @@ export type Database = {
           transaction_id?: string
           transaction_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      transfer_restrictions: {
+        Row: {
+          account_number: string
+          created_at: string
+          created_by: string | null
+          message: string
+          restore_date: string
+          updated_at: string
+        }
+        Insert: {
+          account_number: string
+          created_at?: string
+          created_by?: string | null
+          message?: string
+          restore_date: string
+          updated_at?: string
+        }
+        Update: {
+          account_number?: string
+          created_at?: string
+          created_by?: string | null
+          message?: string
+          restore_date?: string
+          updated_at?: string
         }
         Relationships: []
       }
