@@ -104,10 +104,6 @@ function TransferForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (blocked) {
-      onBlocked?.();
-      return;
-    }
     if (!profile) return;
     const amt = parseFloat(f.amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
