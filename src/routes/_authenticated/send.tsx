@@ -12,16 +12,7 @@ import { toast } from "sonner";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
 import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
-import { useQuery } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { ShieldAlert } from "lucide-react";
+import { TransferRestrictionGate } from "@/components/transfer-restriction-gate";
 
 export const Route = createFileRoute("/_authenticated/send")({
   head: () => ({ meta: [{ title: "Send Money — Bank of Sydney" }] }),
@@ -31,77 +22,29 @@ export const Route = createFileRoute("/_authenticated/send")({
 function SendMoney() {
   const [tab, setTab] = useState("domestic");
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
-  const { data: profile } = useProfile();
-  const [blockOpen, setBlockOpen] = useState(false);
-
-  const { data: restriction } = useQuery({
-    enabled: !!profile?.account_number,
-    queryKey: ["my-transfer-restriction", profile?.account_number],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("transfer_restrictions")
-        .select("restore_date")
-        .eq("account_number", profile!.account_number)
-        .maybeSingle();
-      if (!data) return null;
-      // Auto-clear if restore date has passed
-      const today = new Date().toISOString().slice(0, 10);
-      if (data.restore_date <= today) return null;
-      return data as { restore_date: string };
-    },
-  });
-
-  useEffect(() => {
-    if (restriction) setBlockOpen(true);
-  }, [restriction]);
-
-  const restoreLabel = restriction?.restore_date
-    ? new Date(restriction.restore_date + "T00:00:00").toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-2xl font-bold">Send Money</h1>
-      {restriction && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive flex gap-2">
-          <ShieldAlert className="h-4 w-4 mt-0.5 shrink-0" />
-          <div>
-            Dear customer you can't make transfers at this moment as a new user,
-            kindly hold patience while we restore your services! Restore date: {restoreLabel}.
-          </div>
-        </div>
-      )}
-      <Card>
-        <CardHeader><CardTitle>New transfer</CardTitle></CardHeader>
-        <CardContent>
-          <Tabs value={tab} onValueChange={setTab} className={restriction ? "pointer-events-none opacity-60" : undefined}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="domestic">Domestic</TabsTrigger>
-              <TabsTrigger value="international">International</TabsTrigger>
-            </TabsList>
-            <TabsContent value="domestic">
-              <TransferForm
-                type="domestic"
-                onDone={setReceipt}
-                blocked={!!restriction}
-                onBlocked={() => setBlockOpen(true)}
-              />
-            </TabsContent>
-            <TabsContent value="international">
-              <TransferForm
-                type="international"
-                onDone={setReceipt}
-                blocked={!!restriction}
-                onBlocked={() => setBlockOpen(true)}
-              />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      <TransferRestrictionGate>
+        <Card>
+          <CardHeader><CardTitle>New transfer</CardTitle></CardHeader>
+          <CardContent>
+            <Tabs value={tab} onValueChange={setTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="domestic">Domestic</TabsTrigger>
+                <TabsTrigger value="international">International</TabsTrigger>
+              </TabsList>
+              <TabsContent value="domestic">
+                <TransferForm type="domestic" onDone={setReceipt} />
+              </TabsContent>
+              <TabsContent value="international">
+                <TransferForm type="international" onDone={setReceipt} />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </TransferRestrictionGate>
 
       <TransactionReceiptDialog
         receipt={receipt}
@@ -109,23 +52,6 @@ function SendMoney() {
         title="Transfer Successful"
         subtitle="Your funds are on the way."
       />
-
-      <Dialog open={blockOpen} onOpenChange={setBlockOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-destructive" /> Transfers temporarily on hold
-            </DialogTitle>
-            <DialogDescription className="pt-2 text-foreground">
-              Dear customer you can't make transfers at this moment as a new user,
-              kindly hold patience while we restore your services! Restore date: {restoreLabel}.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => setBlockOpen(false)}>Got it</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
@@ -133,13 +59,9 @@ function SendMoney() {
 function TransferForm({
   type,
   onDone,
-  blocked,
-  onBlocked,
 }: {
   type: "domestic" | "international";
   onDone: (r: ReceiptData) => void;
-  blocked?: boolean;
-  onBlocked?: () => void;
 }) {
   const { data: profile } = useProfile();
   const brand = useBrand();
@@ -182,10 +104,6 @@ function TransferForm({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (blocked) {
-      onBlocked?.();
-      return;
-    }
     if (!profile) return;
     const amt = parseFloat(f.amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");

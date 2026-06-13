@@ -14,6 +14,7 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { CopyAccountNumber, getAccountHolderName } from "@/components/copy-account-number";
 import { useBrand } from "@/hooks/use-brand";
 import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
+import { TransferRestrictionGate } from "@/components/transfer-restriction-gate";
 
 export const Route = createFileRoute("/_authenticated/receive")({
   head: () => ({ meta: [{ title: "Receive Money — Bank of Sydney" }] }),
@@ -99,13 +100,14 @@ function Receive() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Log incoming payment</CardTitle>
-          <CardDescription>Record a payment you've received.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
+      <TransferRestrictionGate>
+        <Card>
+          <CardHeader>
+            <CardTitle>Log incoming payment</CardTitle>
+            <CardDescription>Record a payment you've received.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Sender account number</Label>
               <Input value={f.sender_account} onChange={(e) => setF({ ...f, sender_account: e.target.value })} placeholder="Type to auto-fill name" />
@@ -122,10 +124,11 @@ function Receive() {
             <div className="space-y-1.5"><Label>Sender name</Label><Input required value={f.sender} onChange={(e) => setF({ ...f, sender: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Amount (USD)</Label><Input required type="number" step="0.01" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></div>
             <div className="space-y-1.5"><Label>Reference</Label><Input value={f.reference} onChange={(e) => setF({ ...f, reference: e.target.value })} /></div>
-            <Button type="submit" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Confirm receipt</Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button type="submit" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Confirm receipt</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </TransferRestrictionGate>
       <TransactionReceiptDialog
         receipt={receipt}
         onClose={() => setReceipt(null)}
