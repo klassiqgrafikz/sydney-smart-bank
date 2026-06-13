@@ -5,6 +5,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { adminFundAccount } from "@/lib/admin-portal.functions";
 import { updateBrandSettings } from "@/lib/brand.functions";
 import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
+import {
+  setTransferRestriction,
+  clearTransferRestriction,
+  listTransferRestrictions,
+} from "@/lib/transfer-restrictions.functions";
 import { useBrand } from "@/hooks/use-brand";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
