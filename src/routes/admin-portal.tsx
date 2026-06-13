@@ -434,6 +434,7 @@ function SupportTab() {
   const [chatUrl, setChatUrl] = useState(brand.supportChatUrl);
   const [email, setEmail] = useState(brand.supportEmail);
   const [message, setMessage] = useState(brand.supportMessage);
+  const [chatScript, setChatScript] = useState(brand.supportChatScript);
   const [saving, setSaving] = useState(false);
   const initialized = useRef(false);
 
@@ -445,6 +446,7 @@ function SupportTab() {
     setChatUrl(brand.supportChatUrl);
     setEmail(brand.supportEmail);
     setMessage(brand.supportMessage);
+    setChatScript(brand.supportChatScript);
     initialized.current = true;
   }, [brand]);
 
@@ -460,6 +462,7 @@ function SupportTab() {
           supportChatUrl: chatUrl.trim(),
           supportEmail: email.trim(),
           supportMessage: message,
+          supportChatScript: chatScript,
         },
       });
       await qc.invalidateQueries({ queryKey: ["app-settings"] });
