@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { TransactionReceiptDialog, type ReceiptData } from "@/components/transaction-receipt-dialog";
+import { TransferRestrictionGate } from "@/components/transfer-restriction-gate";
 
 export const Route = createFileRoute("/_authenticated/withdraw")({
   head: () => ({ meta: [{ title: "Withdraw — Bank of Sydney" }] }),
@@ -64,10 +65,11 @@ function Withdraw() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold">Withdraw Funds</h1>
-      <Card>
-        <CardHeader><CardTitle>New withdrawal</CardTitle></CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
+      <TransferRestrictionGate>
+        <Card>
+          <CardHeader><CardTitle>New withdrawal</CardTitle></CardHeader>
+          <CardContent>
+            <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Amount (USD)</Label>
               <Input required type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
@@ -83,10 +85,11 @@ function Withdraw() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Withdraw</Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button type="submit" disabled={loading}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Withdraw</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </TransferRestrictionGate>
       <TransactionReceiptDialog
         receipt={receipt}
         onClose={() => setReceipt(null)}
