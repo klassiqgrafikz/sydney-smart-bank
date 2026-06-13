@@ -25,40 +25,24 @@ export const adminFundAccount = createServerFn({ method: "POST" })
     if (rErr) throw new Error(rErr.message);
     if (!isAdmin) throw new Error("Forbidden: admin only");
 
-    const { data: profile, error: pErr } = await supabaseAdmin
-      .from("profiles")
-      .select("id, first_name, last_name, balance, account_number")
-      .eq("account_number", data.accountNumber)
-      .maybeSingle();
-
-    if (pErr) throw new Error(pErr.message);
-    if (!profile) throw new Error("Account not found");
-
-    const newBalance = Number(profile.balance ?? 0) + data.amount;
-    const { error: uErr } = await supabaseAdmin
-      .from("profiles")
-      .update({ balance: newBalance })
-      .eq("id", profile.id);
-    if (uErr) throw new Error(uErr.message);
-
-    const txId = "ADM-" + Date.now().toString(36).toUpperCase();
-    const { error: tErr } = await supabaseAdmin.from("transactions").insert({
-      transaction_id: txId,
-      user_id: profile.id,
-      sender_name: data.senderName,
-      receiver_name: `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() || "Account holder",
-      amount: data.amount,
-      transaction_type: "credit",
-      description: "Admin deposit",
-      status: "completed",
-    });
-    if (tErr) throw new Error(tErr.message);
+    const { data: result, error: fErr } = await supabaseAdmin.rpc(
+      "admin_fund_account_by_number",
+      {
+        _caller_id: context.userId,
+        _account_number: data.accountNumber,
+        _amount: data.amount,
+        _sender_name: data.senderName,
+      },
+    );
+    if (fErr) throw new Error(fErr.message);
+    const row = Array.isArray(result) ? result[0] : result;
+    if (!row) throw new Error("Funding failed");
 
     return {
       ok: true,
-      accountNumber: profile.account_number,
-      holder: `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim(),
-      newBalance,
-      transactionId: txId,
+      accountNumber: row.account_number,
+      holder: row.holder,
+      newBalance: Number(row.new_balance),
+      transactionId: String(row.transaction_id),
     };
   });
