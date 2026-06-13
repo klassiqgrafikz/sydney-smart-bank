@@ -18,10 +18,10 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in to your Bank of Sydney account or open a new account in minutes — secure, global online banking." },
       { property: "og:title", content: "Sign in or Create an Account — Bank of Sydney" },
       { property: "og:description", content: "Sign in to your Bank of Sydney account or open a new account in minutes." },
-      { property: "og:url", content: "https://sydney-smart-bank.lovable.app/auth" },
+      { property: "og:url", content: "/auth" },
     ],
     links: [
-      { rel: "canonical", href: "https://sydney-smart-bank.lovable.app/auth" },
+      { rel: "canonical", href: "/auth" },
     ],
   }),
   component: AuthPage,

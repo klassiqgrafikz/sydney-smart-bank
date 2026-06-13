@@ -13,12 +13,12 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Premium global banking with Bank of Sydney. Open an account in minutes and send money worldwide with bank-grade security." },
       { property: "og:title", content: "Bank of Sydney — Premium Global Online Banking" },
       { property: "og:description", content: "Premium global banking with Bank of Sydney. Open an account in minutes and send money worldwide." },
-      { property: "og:url", content: "https://sydney-smart-bank.lovable.app/" },
+      { property: "og:url", content: "/" },
       { name: "twitter:title", content: "Bank of Sydney — Premium Global Online Banking" },
       { name: "twitter:description", content: "Premium global banking. Open an account in minutes." },
     ],
     links: [
-      { rel: "canonical", href: "https://sydney-smart-bank.lovable.app/" },
+      { rel: "canonical", href: "/" },
     ],
     scripts: [
       {
@@ -28,7 +28,6 @@ export const Route = createFileRoute("/")({
           "@type": "BankOrCreditUnion",
           name: "Bank of Sydney",
           description: "Premium global online banking — send, receive, and manage money worldwide.",
-          url: "https://sydney-smart-bank.lovable.app/",
         }),
       },
     ],
