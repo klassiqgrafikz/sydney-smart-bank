@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin-portal
 Disallow: /dashboard
 
-Sitemap: https://sydney-smart-bank.lovable.app/sitemap.xml
+Sitemap: /sitemap.xml

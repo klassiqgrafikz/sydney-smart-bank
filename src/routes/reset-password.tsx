@@ -14,10 +14,10 @@ export const Route = createFileRoute("/reset-password")({
       { name: "description", content: "Set a new password for your Bank of Sydney account to securely regain access." },
       { property: "og:title", content: "Reset Password — Bank of Sydney" },
       { property: "og:description", content: "Choose a new password for your Bank of Sydney account." },
-      { property: "og:url", content: "https://sydney-smart-bank.lovable.app/reset-password" },
+      { property: "og:url", content: "/reset-password" },
     ],
     links: [
-      { rel: "canonical", href: "https://sydney-smart-bank.lovable.app/reset-password" },
+      { rel: "canonical", href: "/reset-password" },
     ],
   }),
   ssr: false,
