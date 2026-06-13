@@ -509,6 +509,21 @@ function SupportTab() {
           <Label htmlFor="msg">Default pre-filled message</Label>
           <Textarea id="msg" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} maxLength={300} />
         </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="chatScript">Live chat embed script (Smartsupp / JivoChat / Tawk / Crisp)</Label>
+          <Textarea
+            id="chatScript"
+            rows={6}
+            value={chatScript}
+            onChange={(e) => setChatScript(e.target.value)}
+            maxLength={10000}
+            placeholder={"<!-- Paste the full <script>...</script> snippet from your chat provider -->"}
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            Pasted script is injected into the page so the provider's floating bubble appears on the dashboard. Leave empty to disable.
+          </p>
+        </div>
       </div>
 
       <Button type="submit" className="w-full" disabled={saving}>
