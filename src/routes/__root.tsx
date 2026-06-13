@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useBrand } from "@/hooks/use-brand";
 
 function NotFoundComponent() {
   return (
@@ -138,7 +139,31 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <LiveChatScriptInjector />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );
+}
+
+function LiveChatScriptInjector() {
+  const { supportChatScript } = useBrand();
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const script = (supportChatScript ?? "").trim();
+    if (!script) return;
+    const container = document.createElement("div");
+    container.id = "live-chat-script-container";
+    container.style.cssText = "position:fixed;bottom:0;right:0;z-index:2147483647;";
+    document.body.appendChild(container);
+    try {
+      const fragment = document.createRange().createContextualFragment(script);
+      container.appendChild(fragment);
+    } catch (err) {
+      console.error("[live-chat] Failed to inject script", err);
+    }
+    return () => {
+      container.remove();
+    };
+  }, [supportChatScript]);
+  return null;
 }
