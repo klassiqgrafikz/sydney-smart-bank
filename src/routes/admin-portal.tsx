@@ -590,6 +590,110 @@ function MaintenanceTab() {
           "Turn ON maintenance mode"
         )}
       </Button>
+      <UserRestrictionPanel />
+    </div>
+  );
+}
+
+function UserRestrictionPanel() {
+  const qc = useQueryClient();
+  const setFn = useServerFn(setTransferRestriction);
+  const clearFn = useServerFn(clearTransferRestriction);
+  const listFn = useServerFn(listTransferRestrictions);
+  const [accountNumber, setAccountNumber] = useState("");
+  const [restoreDate, setRestoreDate] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const { data: restrictions } = useQuery({
+    queryKey: ["transfer-restrictions"],
+    queryFn: () => listFn(),
+  });
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await setFn({
+        data: { accountNumber: accountNumber.trim(), restoreDate },
+      });
+      toast.success(`Restriction set for ${res.holder || accountNumber}`);
+      setAccountNumber("");
+      setRestoreDate("");
+      await qc.invalidateQueries({ queryKey: ["transfer-restrictions"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const remove = async (acct: string) => {
+    try {
+      await clearFn({ data: { accountNumber: acct } });
+      toast.success("Restriction removed");
+      await qc.invalidateQueries({ queryKey: ["transfer-restrictions"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Failed");
+    }
+  };
+
+  return (
+    <div className="rounded-lg border p-3 space-y-4">
+      <div>
+        <div className="text-sm font-medium">User Restriction</div>
+        <p className="text-xs text-muted-foreground">
+          Block transfers for a specific account until the restore date. The user sees the
+          new-customer hold notice when they try to send money.
+        </p>
+      </div>
+      <form onSubmit={submit} className="grid gap-3 md:grid-cols-3">
+        <div className="space-y-1.5 md:col-span-2">
+          <Label htmlFor="restrict-acct">Target account number</Label>
+          <Input
+            id="restrict-acct"
+            inputMode="numeric"
+            autoComplete="off"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+            placeholder="e.g. 015234890123456"
+            required
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="restrict-date">Restore date</Label>
+          <Input
+            id="restrict-date"
+            type="date"
+            value={restoreDate}
+            onChange={(e) => setRestoreDate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="md:col-span-3">
+          <Button type="submit" disabled={submitting} className="w-full">
+            {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Setting…</> : "Set Restriction"}
+          </Button>
+        </div>
+      </form>
+
+      {restrictions && restrictions.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-medium text-muted-foreground">Active restrictions</div>
+          <div className="divide-y rounded-md border">
+            {restrictions.map((r) => (
+              <div key={r.account_number} className="flex items-center justify-between gap-2 p-2 text-sm">
+                <div className="min-w-0">
+                  <div className="font-mono truncate">{r.account_number}</div>
+                  <div className="text-xs text-muted-foreground">Restore on {r.restore_date}</div>
+                </div>
+                <Button type="button" size="sm" variant="ghost" onClick={() => remove(r.account_number)}>
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
