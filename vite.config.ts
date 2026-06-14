@@ -12,6 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Force-on Nitro with the node-server preset for self-hosted deploys
+  // (e.g. Fly.io). Inside Lovable's sandbox build, the preset is forced to
+  // Cloudflare and this override is ignored — so it's safe to leave on.
+  nitro: {
+    preset: "node-server",
+  },
   vite: {
     preview: {
       allowedHosts: true,
