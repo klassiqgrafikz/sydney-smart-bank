@@ -10,7 +10,14 @@ import {
   clearTransferRestriction,
   listTransferRestrictions,
 } from "@/lib/transfer-restrictions.functions";
-import { useBrand } from "@/hooks/use-brand";
+import {
+  useBrand,
+  DASHBOARD_WIDGET_DEFAULTS,
+  type DashboardWidgetKey,
+  type PageKey,
+  type PageColors,
+  type ThemeOverrides,
+} from "@/hooks/use-brand";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench, Palette, LayoutDashboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -80,9 +87,11 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
+                  <TabsTrigger value="theme">Theme</TabsTrigger>
+                  <TabsTrigger value="dash">Dashboard</TabsTrigger>
                   <TabsTrigger value="support">Support</TabsTrigger>
                   <TabsTrigger value="site">Site</TabsTrigger>
                 </TabsList>
@@ -91,6 +100,12 @@ function AdminPortalPage() {
                 </TabsContent>
                 <TabsContent value="brand" className="pt-4">
                   <BrandTab />
+                </TabsContent>
+                <TabsContent value="theme" className="pt-4">
+                  <ThemeTab />
+                </TabsContent>
+                <TabsContent value="dash" className="pt-4">
+                  <DashboardLayoutTab />
                 </TabsContent>
                 <TabsContent value="support" className="pt-4">
                   <SupportTab />
