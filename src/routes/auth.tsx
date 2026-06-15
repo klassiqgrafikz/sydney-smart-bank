@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
+import { PageTheme } from "@/components/page-theme";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -75,7 +76,7 @@ function AuthPage() {
   }, [navigate]);
 
   return (
-    <div className="grid min-h-screen md:grid-cols-2">
+    <PageTheme page="login" className="grid min-h-screen bg-background text-foreground md:grid-cols-2">
       <div className="relative hidden flex-col justify-between p-10 text-white md:flex" style={{ background: "var(--gradient-hero)" }}>
         <Link to="/" className="flex items-center gap-3 font-semibold">
           <img src={brand.markUrl} alt={brand.bankName} className="h-10 w-10 rounded-lg bg-white object-contain p-1" />
@@ -104,7 +105,7 @@ function AuthPage() {
           </Tabs>
         </div>
       </div>
-    </div>
+    </PageTheme>
   );
 }
 
