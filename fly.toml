@@ -1,21 +1,26 @@
-# fly.toml — TanStack Start (Node SSR) on Fly.io
-# Run `fly launch --no-deploy` once to set app name + region, then `fly deploy`.
+# fly.toml app configuration file generated for sydney-smart-bank on 2026-06-15T11:04:44Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'sydney-smart-bank'
+primary_region = 'iad'
 
 [build]
 
 [env]
-  NODE_ENV = "production"
-  PORT = "3000"
-  HOST = "0.0.0.0"
+  HOST = '0.0.0.0'
+  NODE_ENV = 'production'
+  PORT = '3000'
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
 [[vm]]
-  cpu_kind = "shared"
+  cpu_kind = 'shared'
   cpus = 1
   memory_mb = 512
