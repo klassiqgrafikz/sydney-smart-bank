@@ -13,6 +13,8 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { CopyAccountNumber } from "@/components/copy-account-number";
 import { TransactionDetailsDialog } from "@/components/transaction-details-dialog";
 import { LiveSupport } from "@/components/live-support";
+import { PageTheme } from "@/components/page-theme";
+import { DASHBOARD_WIDGET_DEFAULTS } from "@/hooks/use-brand";
 import {
   CashFlowWidget,
   SpendingBreakdownWidget,
@@ -30,6 +32,7 @@ function Dashboard() {
   const brand = useBrand();
   const [showBalance, setShowBalance] = useState(true);
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
+  const widgets = { ...DASHBOARD_WIDGET_DEFAULTS, ...brand.dashboardWidgets };
 
   const { data: txs } = useQuery({
     queryKey: ["recent-tx"],
@@ -44,7 +47,7 @@ function Dashboard() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <PageTheme page="dashboard" className="mx-auto max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
           Welcome, {profile?.last_name || profile?.first_name || "Customer"}
@@ -52,6 +55,7 @@ function Dashboard() {
         <p className="text-sm text-muted-foreground">Here's a snapshot of your account today.</p>
       </div>
 
+      {widgets.balance && (
       <Card className="overflow-hidden border-0 text-white" style={{ background: "var(--gradient-hero)", boxShadow: "var(--shadow-elegant)" }}>
         <CardContent className="space-y-4 p-6">
           <div className="flex items-start justify-between">
@@ -80,7 +84,9 @@ function Dashboard() {
           </div>
         </CardContent>
       </Card>
+      )}
 
+      {widgets.quickActions && (
       <div className="grid gap-4 md:grid-cols-3">
         {[
           { to: "/send", icon: Send, label: "Send", desc: "Transfer worldwide" },
@@ -102,17 +108,22 @@ function Dashboard() {
           </Link>
         ))}
       </div>
+      )}
 
-      <CashFlowWidget />
+      {widgets.cashFlow && <CashFlowWidget />}
 
+      {(widgets.savingsGoal || widgets.spendingBreakdown || widgets.exchangeRates) && (
+        <div className="grid gap-4 md:grid-cols-3">
+          {widgets.savingsGoal && <SavingsGoalWidget balance={Number(profile?.balance ?? 0)} />}
+          {widgets.spendingBreakdown && <SpendingBreakdownWidget />}
+          {widgets.exchangeRates && <ExchangeRatesWidget />}
+        </div>
+      )}
+
+      {(widgets.recentTransactions || widgets.accountInfo) && (
       <div className="grid gap-4 md:grid-cols-3">
-        <SavingsGoalWidget balance={Number(profile?.balance ?? 0)} />
-        <SpendingBreakdownWidget />
-        <ExchangeRatesWidget />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-2">
+        {widgets.recentTransactions && (
+        <Card className={widgets.accountInfo ? "md:col-span-2" : "md:col-span-3"}>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">Recent Transactions</CardTitle>
             <Link to="/transactions" className="text-xs text-primary hover:underline">View all</Link>
@@ -158,7 +169,9 @@ function Dashboard() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        )}
+        {widgets.accountInfo && (
+        <Card className={widgets.recentTransactions ? "" : "md:col-span-3"}>
           <CardHeader><CardTitle className="text-base">Account</CardTitle></CardHeader>
           <CardContent className="space-y-3 text-sm">
             <Row label="Status" value={<Badge variant="secondary" className="capitalize">{profile?.account_status ?? "—"}</Badge>} />
@@ -167,10 +180,12 @@ function Dashboard() {
             <Row label="Country" value={profile?.country ?? "—"} />
           </CardContent>
         </Card>
+        )}
       </div>
+      )}
       <TransactionDetailsDialog tx={selectedTx} open={!!selectedTx} onOpenChange={(v) => !v && setSelectedTx(null)} />
       <LiveSupport hideEmail />
-    </div>
+    </PageTheme>
   );
 }
 

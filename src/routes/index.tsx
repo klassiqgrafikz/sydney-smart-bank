@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Menu } from "lucide-react";
 import { useBrand } from "@/hooks/use-brand";
 import { LiveSupport } from "@/components/live-support";
+import { PageTheme } from "@/components/page-theme";
 
 const heroImage = "/brand/landing-hero-banking.jpg";
 
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const brand = useBrand();
   return (
-    <div className="min-h-screen bg-background">
+    <PageTheme page="home" className="min-h-screen bg-background text-foreground">
       {/* Top navy bar: Contact us | Login */}
       <div className="grid grid-cols-2 bg-[#0a2756] text-white">
         <a
@@ -112,6 +113,6 @@ function Landing() {
           {brand.footerText}
         </div>
       </footer>
-    </div>
+    </PageTheme>
   );
 }

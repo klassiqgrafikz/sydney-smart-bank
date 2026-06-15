@@ -10,7 +10,14 @@ import {
   clearTransferRestriction,
   listTransferRestrictions,
 } from "@/lib/transfer-restrictions.functions";
-import { useBrand } from "@/hooks/use-brand";
+import {
+  useBrand,
+  DASHBOARD_WIDGET_DEFAULTS,
+  type DashboardWidgetKey,
+  type PageKey,
+  type PageColors,
+  type ThemeOverrides,
+} from "@/hooks/use-brand";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench } from "lucide-react";
+import { Lock, Loader2, ShieldCheck, Upload, KeyRound, MessageCircle, Wrench, Palette, LayoutDashboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin-portal")({
@@ -80,9 +87,11 @@ function AdminPortalPage() {
           ) : (
             <div className="space-y-4">
               <Tabs defaultValue="fund">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="fund">Fund account</TabsTrigger>
                   <TabsTrigger value="brand">Branding</TabsTrigger>
+                  <TabsTrigger value="theme">Theme</TabsTrigger>
+                  <TabsTrigger value="dash">Dashboard</TabsTrigger>
                   <TabsTrigger value="support">Support</TabsTrigger>
                   <TabsTrigger value="site">Site</TabsTrigger>
                 </TabsList>
@@ -91,6 +100,12 @@ function AdminPortalPage() {
                 </TabsContent>
                 <TabsContent value="brand" className="pt-4">
                   <BrandTab />
+                </TabsContent>
+                <TabsContent value="theme" className="pt-4">
+                  <ThemeTab />
+                </TabsContent>
+                <TabsContent value="dash" className="pt-4">
+                  <DashboardLayoutTab />
                 </TabsContent>
                 <TabsContent value="support" className="pt-4">
                   <SupportTab />
@@ -695,5 +710,222 @@ function UserRestrictionPanel() {
         </div>
       )}
     </div>
+  );
+}
+
+const PAGES: { key: PageKey; label: string; description: string }[] = [
+  { key: "home", label: "Homepage", description: "Public landing page colors." },
+  { key: "login", label: "Login page", description: "Sign-in / create account screen." },
+  { key: "dashboard", label: "Dashboard", description: "Signed-in customer dashboard." },
+];
+
+const COLOR_FIELDS: { key: keyof PageColors; label: string; fallback: string }[] = [
+  { key: "background", label: "Background", fallback: "#ffffff" },
+  { key: "primary", label: "Primary / accent buttons", fallback: "#0a2756" },
+  { key: "text", label: "Text / foreground", fallback: "#0f172a" },
+  { key: "card", label: "Card / surface", fallback: "#ffffff" },
+  { key: "accent", label: "Highlight accent", fallback: "#cfe5f0" },
+];
+
+function ThemeTab() {
+  const brand = useBrand();
+  const qc = useQueryClient();
+  const update = useServerFn(updateBrandSettings);
+  const [theme, setTheme] = useState<ThemeOverrides>(brand.themeOverrides ?? {});
+  const [saving, setSaving] = useState(false);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    if (brand) {
+      setTheme(brand.themeOverrides ?? {});
+      initialized.current = true;
+    }
+  }, [brand]);
+
+  const setColor = (page: PageKey, field: keyof PageColors, value: string) => {
+    setTheme((t) => ({ ...t, [page]: { ...(t[page] ?? {}), [field]: value } }));
+  };
+  const clearColor = (page: PageKey, field: keyof PageColors) => {
+    setTheme((t) => {
+      const next = { ...(t[page] ?? {}) };
+      delete next[field];
+      return { ...t, [page]: next };
+    });
+  };
+  const resetPage = (page: PageKey) => {
+    setTheme((t) => ({ ...t, [page]: {} }));
+  };
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      // Strip empty strings so they aren't persisted
+      const cleaned: ThemeOverrides = {};
+      (Object.keys(theme) as PageKey[]).forEach((pk) => {
+        const page = theme[pk] ?? {};
+        const pageOut: PageColors = {};
+        (Object.keys(page) as (keyof PageColors)[]).forEach((ck) => {
+          const v = page[ck];
+          if (v && /^#[0-9a-fA-F]{6}$/.test(v)) pageOut[ck] = v;
+        });
+        cleaned[pk] = pageOut;
+      });
+      await update({ data: { themeOverrides: cleaned } });
+      await qc.invalidateQueries({ queryKey: ["app-settings"] });
+      toast.success("Theme saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-5">
+      <div className="flex items-start gap-2 rounded-lg border p-3 text-sm">
+        <Palette className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+        <p className="text-muted-foreground">
+          Pick custom colors per page. Leave a field empty (click <em>Reset</em>) to use the default
+          theme. Changes apply instantly after saving.
+        </p>
+      </div>
+      {PAGES.map((p) => {
+        const colors = theme[p.key] ?? {};
+        return (
+          <div key={p.key} className="rounded-lg border p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold">{p.label}</div>
+                <p className="text-xs text-muted-foreground">{p.description}</p>
+              </div>
+              <Button type="button" size="sm" variant="ghost" onClick={() => resetPage(p.key)}>
+                Reset all
+              </Button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {COLOR_FIELDS.map((f) => {
+                const val = colors[f.key] ?? "";
+                const display = val || f.fallback;
+                return (
+                  <div key={f.key} className="space-y-1.5">
+                    <Label className="text-xs">{f.label}</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={display}
+                        onChange={(e) => setColor(p.key, f.key, e.target.value)}
+                        className="h-9 w-12 cursor-pointer rounded border bg-transparent"
+                        aria-label={`${p.label} ${f.label} color`}
+                      />
+                      <Input
+                        value={val}
+                        onChange={(e) => setColor(p.key, f.key, e.target.value)}
+                        placeholder={f.fallback}
+                        maxLength={7}
+                        className="font-mono text-xs"
+                      />
+                      {val && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => clearColor(p.key, f.key)}
+                          className="px-2"
+                          aria-label="Clear color"
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      <Button type="submit" className="w-full" disabled={saving}>
+        {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : "Save theme"}
+      </Button>
+    </form>
+  );
+}
+
+const DASH_WIDGETS: { key: DashboardWidgetKey; label: string; description: string }[] = [
+  { key: "balance", label: "Balance card", description: "Hero card with account number and balance." },
+  { key: "quickActions", label: "Quick actions", description: "Send / Receive / Withdraw shortcuts." },
+  { key: "cashFlow", label: "Cash flow chart", description: "6-month income vs. expense area chart." },
+  { key: "savingsGoal", label: "Savings goal", description: "Progress toward savings target." },
+  { key: "spendingBreakdown", label: "Spending breakdown", description: "Donut chart of outgoing categories." },
+  { key: "exchangeRates", label: "FX rates", description: "Live foreign exchange rates panel." },
+  { key: "recentTransactions", label: "Recent transactions", description: "Latest 5 transactions list." },
+  { key: "accountInfo", label: "Account info", description: "Status, last login, email, country." },
+];
+
+function DashboardLayoutTab() {
+  const brand = useBrand();
+  const qc = useQueryClient();
+  const update = useServerFn(updateBrandSettings);
+  const [widgets, setWidgets] = useState<Record<DashboardWidgetKey, boolean>>({
+    ...DASHBOARD_WIDGET_DEFAULTS,
+    ...(brand.dashboardWidgets as Record<DashboardWidgetKey, boolean>),
+  });
+  const [saving, setSaving] = useState(false);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (initialized.current) return;
+    if (brand) {
+      setWidgets({
+        ...DASHBOARD_WIDGET_DEFAULTS,
+        ...(brand.dashboardWidgets as Record<DashboardWidgetKey, boolean>),
+      });
+      initialized.current = true;
+    }
+  }, [brand]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await update({ data: { dashboardWidgets: widgets } });
+      await qc.invalidateQueries({ queryKey: ["app-settings"] });
+      toast.success("Dashboard layout saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.replace(/^Error:\s*/, "") : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <div className="flex items-start gap-2 rounded-lg border p-3 text-sm">
+        <LayoutDashboard className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+        <p className="text-muted-foreground">
+          Choose which sections appear on every customer's dashboard. Toggle a widget off to hide it
+          for all users.
+        </p>
+      </div>
+      <div className="space-y-2">
+        {DASH_WIDGETS.map((w) => (
+          <div key={w.key} className="flex items-center justify-between rounded-lg border p-3">
+            <div className="min-w-0 pr-3">
+              <div className="text-sm font-medium">{w.label}</div>
+              <p className="text-xs text-muted-foreground">{w.description}</p>
+            </div>
+            <Switch
+              checked={widgets[w.key]}
+              onCheckedChange={(v) => setWidgets((s) => ({ ...s, [w.key]: v }))}
+            />
+          </div>
+        ))}
+      </div>
+      <Button type="submit" className="w-full" disabled={saving}>
+        {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : "Save dashboard layout"}
+      </Button>
+    </form>
   );
 }

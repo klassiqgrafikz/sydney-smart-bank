@@ -19,6 +19,7 @@ export type Database = {
           address: string
           bank_name: string
           created_at: string
+          dashboard_widgets: Json
           footer_text: string
           id: string
           logo_data_url: string | null
@@ -33,12 +34,14 @@ export type Database = {
           support_telegram: string
           support_whatsapp: string
           tagline: string
+          theme_overrides: Json
           updated_at: string
         }
         Insert: {
           address?: string
           bank_name?: string
           created_at?: string
+          dashboard_widgets?: Json
           footer_text?: string
           id?: string
           logo_data_url?: string | null
@@ -53,12 +56,14 @@ export type Database = {
           support_telegram?: string
           support_whatsapp?: string
           tagline?: string
+          theme_overrides?: Json
           updated_at?: string
         }
         Update: {
           address?: string
           bank_name?: string
           created_at?: string
+          dashboard_widgets?: Json
           footer_text?: string
           id?: string
           logo_data_url?: string | null
@@ -73,6 +78,7 @@ export type Database = {
           support_telegram?: string
           support_whatsapp?: string
           tagline?: string
+          theme_overrides?: Json
           updated_at?: string
         }
         Relationships: []
