@@ -1,6 +1,48 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const PAGE_KEYS = ["home", "login", "dashboard"] as const;
+const COLOR_KEYS = ["background", "primary", "text", "card", "accent"] as const;
+const WIDGET_KEYS = [
+  "balance", "quickActions", "cashFlow", "savingsGoal",
+  "spendingBreakdown", "exchangeRates", "recentTransactions", "accountInfo",
+] as const;
+
+function sanitizeColor(v: unknown): string | undefined {
+  if (v === undefined || v === null || v === "") return "";
+  const s = String(v).trim();
+  if (!/^#[0-9a-fA-F]{6}$/.test(s)) throw new Error("Invalid color (must be #rrggbb)");
+  return s;
+}
+function sanitizeThemeOverrides(input: unknown): Record<string, Record<string, string>> | undefined {
+  if (input === undefined) return undefined;
+  if (input === null || typeof input !== "object") throw new Error("Invalid theme");
+  const out: Record<string, Record<string, string>> = {};
+  for (const pk of PAGE_KEYS) {
+    const page = (input as Record<string, unknown>)[pk];
+    if (!page || typeof page !== "object") continue;
+    const pageOut: Record<string, string> = {};
+    for (const ck of COLOR_KEYS) {
+      const v = (page as Record<string, unknown>)[ck];
+      if (v === undefined) continue;
+      const cleaned = sanitizeColor(v);
+      if (cleaned !== undefined) pageOut[ck] = cleaned;
+    }
+    out[pk] = pageOut;
+  }
+  return out;
+}
+function sanitizeWidgets(input: unknown): Record<string, boolean> | undefined {
+  if (input === undefined) return undefined;
+  if (input === null || typeof input !== "object") throw new Error("Invalid widgets");
+  const out: Record<string, boolean> = {};
+  for (const k of WIDGET_KEYS) {
+    const v = (input as Record<string, unknown>)[k];
+    if (typeof v === "boolean") out[k] = v;
+  }
+  return out;
+}
+
 export const updateBrandSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -20,6 +62,8 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       maintenanceMode?: boolean;
       footerText?: string;
       supportChatScript?: string;
+      themeOverrides?: unknown;
+      dashboardWidgets?: unknown;
     }) => {
       if (!input) throw new Error("Invalid request");
       const str = (v: unknown, max: number) => {
@@ -60,6 +104,8 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
                 if (s.length > 10_000) throw new Error("Chat script too long (max 10KB)");
                 return s;
               })(),
+        themeOverrides: sanitizeThemeOverrides(input.themeOverrides),
+        dashboardWidgets: sanitizeWidgets(input.dashboardWidgets),
       };
     },
   )
@@ -87,6 +133,8 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
       maintenance_mode?: boolean;
       footer_text?: string;
       support_chat_script?: string;
+      theme_overrides?: Record<string, Record<string, string>>;
+      dashboard_widgets?: Record<string, boolean>;
     } = {};
     if (data.bankName !== undefined && data.bankName.length > 0) patch.bank_name = data.bankName;
     if (data.tagline !== undefined) patch.tagline = data.tagline;
@@ -103,6 +151,8 @@ export const updateBrandSettings = createServerFn({ method: "POST" })
     if (data.maintenanceMode !== undefined) patch.maintenance_mode = data.maintenanceMode;
     if (data.footerText !== undefined) patch.footer_text = data.footerText;
     if (data.supportChatScript !== undefined) patch.support_chat_script = data.supportChatScript;
+    if (data.themeOverrides !== undefined) patch.theme_overrides = data.themeOverrides;
+    if (data.dashboardWidgets !== undefined) patch.dashboard_widgets = data.dashboardWidgets;
     if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabaseAdmin
       .from("app_settings")
