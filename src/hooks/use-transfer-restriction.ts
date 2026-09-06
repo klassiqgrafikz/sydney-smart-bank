@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/use-profile";
 
 export interface TransferRestriction {
-  restoreDate: string; // YYYY-MM-DD
-  restoreLabel: string;
+  restoreDate: string | null; // YYYY-MM-DD or null for indefinite
+  restoreLabel: string | null;
   statusText: string;
   message: string;
 }
@@ -22,15 +22,16 @@ export function useTransferRestriction(): TransferRestriction | null {
         .eq("account_number", accountNumber!)
         .maybeSingle();
       if (!data) return null;
-      if (!data.restore_date) return null;
       const today = new Date().toISOString().slice(0, 10);
-      if (data.restore_date <= today) return null;
-      const restoreLabel = new Date(data.restore_date + "T00:00:00").toLocaleDateString(
-        undefined,
-        { year: "numeric", month: "long", day: "numeric" },
-      );
+      if (data.restore_date && data.restore_date <= today) return null;
+      const restoreLabel = data.restore_date
+        ? new Date(data.restore_date + "T00:00:00").toLocaleDateString(
+            undefined,
+            { year: "numeric", month: "long", day: "numeric" },
+          )
+        : null;
       return {
-        restoreDate: data.restore_date,
+        restoreDate: data.restore_date ?? null,
         restoreLabel,
         statusText: (data.status_text ?? "").trim(),
         message: (data.message ?? "").trim(),
