@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.admin_fund_account_by_number(uuid, text, numeric, text);
