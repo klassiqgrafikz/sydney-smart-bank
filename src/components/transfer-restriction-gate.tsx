@@ -18,9 +18,9 @@ function RestrictionBody({ restriction }: { restriction: TransferRestriction }) 
     <div className="space-y-1">
       <div className="font-bold">{restriction.statusText || DEFAULT_STATUS}</div>
       {restriction.message && <div className="font-normal">{restriction.message}</div>}
-      <div className="text-xs opacity-80">
-        {restriction.restoreLabel ? `Restore date: ${restriction.restoreLabel}` : "Until further notice"}
-      </div>
+      {restriction.restoreLabel && (
+        <div className="text-xs opacity-80">Restore date: {restriction.restoreLabel}</div>
+      )}
     </div>
   );
 }
